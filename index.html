@@ -28,12 +28,7 @@
         .cb-delete-btn:hover { opacity: 1 !important; }
         .sticky-note { background-color: #fef08a; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); border-radius: 4px; border-top: 10px solid rgba(255,255,0,0.3); }
         .duty-card { background-color: #e0f2fe; border-left: 4px solid #3b82f6; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); border-radius: 4px; }
-        .memo-pad {
-            background-color: #fffbeb; background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
-            background-size: 100% 2rem; line-height: 2rem; padding: 2rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            height: 100%; overflow-y: auto; border-radius: 0.5rem;
-        }
-        .memo-textarea { width: 100%; height: 100%; background: transparent; border: none; resize: none; outline: none; font-size: 1.25rem; line-height: 2rem; color: #374151; }
+        
         @keyframes blinker { 50% { opacity: 0.3; color: red; } }
         .blink-active { animation: blinker 1.5s linear infinite; font-weight: bold; }
         .content-area { height: calc(100vh - 60px); overflow-y: hidden; }
@@ -41,6 +36,8 @@
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        /* 分頁按鈕樣式 */
         .tab-btn {
             white-space: nowrap; padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 500;
             border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center;
@@ -48,13 +45,23 @@
         .tab-active { background-color: #f3f4f6; color: #1e40af; border-bottom: 3px solid #1e40af; }
         .tab-inactive { background-color: white; color: #64748b; border-bottom: 3px solid transparent; }
         .tab-inactive:hover { background-color: #f1f5f9; }
-        .tab-close-btn { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left: 8px; color: #94a3b8; transition: all 0.2s; cursor: pointer; }
-        .tab-close-btn:hover { background-color: #ef4444; color: white; }
+        
+        /* 編輯按鈕樣式 */
+        .tab-edit-btn { 
+            width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            margin-left: 8px; color: #94a3b8; transition: all 0.2s; cursor: pointer; background: rgba(0,0,0,0.05); 
+        }
+        .tab-edit-btn:hover { background-color: #3b82f6; color: white; transform: scale(1.1); }
+        
+        .add-tab-btn { background-color: rgba(255,255,255,0.8); color: #1e40af; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-left: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: all 0.2s; flex-shrink: 0; }
+        .add-tab-btn:hover { background-color: #1e40af; color: white; transform: scale(1.1); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        
         .workbook-bg { background-color: #ffffff; background-image: linear-gradient(rgba(200, 220, 200, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(200, 220, 200, 0.4) 1px, transparent 1px); background-size: 20px 20px; position: relative; }
         .student-grid-cell { min-height: 90px; display: flex; flex-direction: column; border-radius: 10px; transition: all 0.2s; position: relative; cursor: pointer; overflow: hidden; background-color: #22c55e; border: 2px solid #ffffff; box-shadow: 0 3px 5px rgba(0,0,0,0.12); }
         .student-grid-cell:hover { transform: translateY(-2px); background-color: #16a34a; box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
         .cell-tape { position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(-2deg); width: 30px; height: 15px; background-color: rgba(255,255,255,0.4); z-index: 0; }
         .cute-font { font-family: 'Mali', 'Noto Sans TC', cursive; }
+
         @media print {
             body { overflow: auto; background: white; }
             header, .no-print { display: none !important; }
@@ -66,8 +73,15 @@
 </head>
 <body class="h-screen flex flex-col">
 
+    <!-- 頂部導覽列與分頁 -->
     <header class="h-[60px] bg-white border-b shadow-sm flex items-center px-4 justify-between shrink-0 z-10">
-        <div class="flex items-center space-x-1 overflow-x-auto max-w-[70%] no-scrollbar h-full pt-2" id="tabs-container"></div>
+        <div class="flex items-center h-full pt-2 max-w-[70%]">
+            <div class="flex items-center space-x-1 overflow-x-auto no-scrollbar h-full" id="tabs-container"></div>
+            <!-- 動態新增分頁按鈕 -->
+            <button onclick="app.openAddTabModal()" class="add-tab-btn" title="新增分頁">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
         <div class="flex items-center gap-2">
             <div id="sync-status" class="text-xs text-gray-500 flex items-center mr-2 font-bold bg-gray-100 px-2 py-1 rounded-full">
                 <i class="fas fa-circle-notch fa-spin mr-1"></i> 系統啟動中...
@@ -75,10 +89,15 @@
         </div>
     </header>
 
-    <main class="flex-grow relative bg-gray-100 flex flex-col" id="main-content"></main>
+    <!-- 主要內容區 -->
+    <main class="flex-grow relative bg-gray-100 flex flex-col overflow-hidden" id="main-content"></main>
 
+    <!-- ============================================== -->
     <!-- 隱藏的模板區域 -->
+    <!-- ============================================== -->
     <div style="display:none;">
+        
+        <!-- 首頁黑板模板 -->
         <div id="template-home">
              <div class="grid grid-cols-12 gap-4 h-full p-4">
                 <div class="col-span-12 md:col-span-3 flex flex-col gap-4 h-full">
@@ -161,6 +180,7 @@
             </div>
         </div>
 
+        <!-- 作業管理模板 -->
         <div id="template-homework" class="w-full h-full workbook-bg">
             <div class="flex flex-col h-full ml-0">
                 <div class="p-2 md:p-3 flex flex-wrap items-center justify-between gap-2 shrink-0 no-print bg-white/80 backdrop-blur border-b border-green-100 m-2 rounded-xl shadow-sm">
@@ -182,18 +202,38 @@
                         <button onclick="app.addHomeworkType()" class="bg-green-500 text-white hover:bg-green-600 px-3 py-1 rounded-full text-sm font-bold transition shadow-sm"><i class="fas fa-plus"></i></button>
                     </div>
                     <div id="homework-grid" class="grid grid-cols-7 gap-2 md:gap-3 pb-4"></div>
-                    <div id="print-view" class="hidden print-visible p-8 bg-white">
-                        <div class="text-center mb-8 border-b-2 border-black pb-4"><h1 class="text-4xl font-black mb-2 tracking-widest">作業缺交統計表</h1><p class="text-xl" id="print-date">日期：2023/--/--</p></div>
-                        <table class="w-full text-left border-collapse border border-black" id="print-table">
-                            <thead><tr class="bg-gray-200"><th class="border border-black px-4 py-2 text-xl w-24 text-center">座號</th><th class="border border-black px-4 py-2 text-xl">缺交紀錄</th></tr></thead>
-                            <tbody id="print-table-body"></tbody>
-                        </table>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- 新增/修改滿版分頁 Modal -->
+    <div id="add-tab-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 flex flex-col max-h-[90vh]">
+            <h3 id="modal-title" class="text-2xl font-bold text-blue-900 mb-2 border-b-2 border-blue-100 pb-2 flex items-center">
+                <i class="fas fa-code mr-2 text-blue-500"></i> 新增自訂分頁
+            </h3>
+            <p class="text-sm text-blue-700 mb-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                <i class="fas fa-shield-alt text-green-600 mr-1"></i> <strong>已啟用沙盒隔離技術</strong><br>
+                您可以貼上 AI 生成的完整 HTML 代碼、任何網址，系統會自動建立獨立環境運行，確保排版與程式碼 100% 完整呈現。
+            </p>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">1. 分頁名稱</label>
+                <input type="text" id="new-tab-title" class="w-full border-2 border-gray-200 focus:border-blue-400 p-2 rounded outline-none transition" placeholder="例如：訂正小工具">
+            </div>
+            <div class="mb-6 flex-grow flex flex-col">
+                <label class="block text-gray-700 font-bold mb-2">2. 貼上 HTML 原始碼 或 直接貼網址</label>
+                <textarea id="new-tab-code" class="w-full border-2 border-gray-200 focus:border-blue-400 p-2 rounded outline-none transition flex-grow resize-none font-mono text-sm" placeholder='請貼上完整 HTML 原始碼、網址或 <iframe ...> 語法'></textarea>
+            </div>
+            <div class="flex justify-end gap-3 mt-auto pt-4 border-t border-gray-100">
+                <button onclick="app.closeAddTabModal()" class="px-5 py-2 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 transition">取消</button>
+                <button id="modal-submit-btn" onclick="app.confirmAddOrEditTab()" class="px-5 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-md transition"><i class="fas fa-save mr-1"></i> 儲存分頁</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 作業勾選 Modal -->
     <div id="homework-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4 animate-fade-in no-print">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
             <div class="bg-green-500 text-white p-6 flex justify-between items-center relative overflow-hidden">
@@ -201,19 +241,15 @@
                 <button onclick="app.closeHomeworkModal()" class="bg-white/20 hover:bg-white/30 p-2 rounded-full transition-colors relative z-10"><i class="fas fa-times text-2xl"></i></button>
             </div>
             <div class="p-6 overflow-y-auto bg-green-50">
-                <div class="mb-4 bg-white p-3 rounded-lg text-sm text-gray-600 flex gap-2 border border-green-100 shadow-sm">
-                    <i class="fas fa-hand-pointer text-green-400 mt-0.5"></i>點擊切換：<span class="text-red-500 font-bold">缺交</span> &rarr; <span class="text-green-600 font-bold">已補</span> &rarr; 清除
-                </div>
                 <div id="homework-types-grid" class="grid grid-cols-2 gap-3"></div>
             </div>
             <div class="p-4 bg-white border-t border-green-100 flex justify-between items-center">
-                <button onclick="app.markAllResolved()" class="flex items-center gap-2 text-green-600 hover:text-green-700 font-bold px-4 py-2 rounded-lg hover:bg-green-50 transition-colors"><i class="fas fa-check-circle"></i> 一鍵全部補交</button>
+                <button onclick="app.markAllResolved()" class="flex items-center gap-2 text-green-600 font-bold hover:bg-green-50 px-4 py-2 rounded-lg transition-colors"><i class="fas fa-check-circle"></i> 全部補交</button>
                 <button onclick="app.closeHomeworkModal()" class="bg-slate-700 text-white px-6 py-2 rounded-lg font-bold hover:bg-slate-800 transition-colors shadow-lg">完成</button>
             </div>
         </div>
     </div>
 
-    <!-- Firebase Scripts -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -222,7 +258,7 @@
         // 👇👇👇 請將您在 Firebase 申請的設定「替換」掉下面這區塊 👇👇👇
         // =======================================================================
         const firebaseConfig = {
-            apiKey: "AIzaSyAT9VXm8gf5Pn4A1iu3xXF6X8Ve9NYlUAk",
+           apiKey: "AIzaSyAT9VXm8gf5Pn4A1iu3xXF6X8Ve9NYlUAk",
   authDomain: "teacherboard-9224d.firebaseapp.com",
   projectId: "teacherboard-9224d",
   storageBucket: "teacherboard-9224d.firebasestorage.app",
@@ -230,16 +266,16 @@
   appId: "1:801036213120:web:2077de68b0a74395023f65"
         };
         // =======================================================================
-        // 👆👆👆 貼上結束 👆👆👆
-        // =======================================================================
 
         let db, docRef;
 
         const app = {
-            tabs: [ { id: 'home', title: '首頁', type: 'system', icon: 'fa-home' }, { id: 'homework', title: '作業管理', type: 'system', icon: 'fa-book' } ],
+            tabs: [ { id: 'home', title: '聯絡簿', type: 'system', icon: 'fa-home' }, { id: 'homework', title: '作業管理', type: 'system', icon: 'fa-book' } ],
             settings: { reminderText: '', reminderColor: '#000000', reminderFontSize: 24, reminderBlink: false, duty1: '', duty2: '', contactBookFontSize: 24, idiomFontSize: 24, homeworkTypes: ["生字", "圈短", "短造", "國習", "聽考", "國卷", "數習", "數作", "數卷", "數八", "作文", "聯絡簿", "回條", "週記"] },
-            data: { contactBook: {}, homework: {}, memos: {} },
+            data: { contactBook: {}, homework: {}, memos: {}, customTabs: [] },
+            
             saveTimeout: null, activeTabId: 'home', currentWeekBase: null, currentDayIndex: 0, currentHomeworkDate: new Date().toISOString().split('T')[0], currentEditingStudent: null,
+            editingTabId: null, 
             
             init: function() {
                 this.currentWeekBase = this.getMonday(new Date());
@@ -251,22 +287,18 @@
                 document.getElementById('homework-date').value = this.currentHomeworkDate;
 
                 const statusEl = document.getElementById('sync-status');
-                
-                // 檢查是否有填寫金鑰
                 if (firebaseConfig.apiKey.includes("請在這裡貼上") || !firebaseConfig.apiKey) {
                     if(statusEl) statusEl.innerHTML = '<span class="text-red-500 bg-red-100 px-3 py-1 rounded-full"><i class="fas fa-exclamation-triangle"></i> 請修改程式碼填寫雲端金鑰</span>';
-                    return; // 停止連線
+                    return; 
                 }
 
                 try {
                     const firebaseApp = initializeApp(firebaseConfig);
                     db = getFirestore(firebaseApp);
-                    // 建立一個固定的資料夾來存放您的黑板，不需登入即可跨裝置讀取
                     docRef = doc(db, "Classrooms", "TeacherBoard_Data"); 
                     this.setupRealtimeListener();
                 } catch (e) {
                     console.error("Firebase 連線失敗:", e);
-                    if(statusEl) statusEl.innerHTML = '<span class="text-red-500"><i class="fas fa-times-circle"></i> 連線錯誤</span>';
                 }
             },
 
@@ -278,24 +310,22 @@
                     if (docSnap.exists()) {
                         const parsed = docSnap.data();
                         if (parsed.settings) this.settings = { ...this.settings, ...parsed.settings };
-                        if (parsed.data) this.data = { ...this.data, ...parsed.data };
+                        if (parsed.data) {
+                            this.data = { ...this.data, ...parsed.data };
+                            if (!this.data.customTabs) this.data.customTabs = [];
+                        }
                         
+                        this.renderTabs();
                         if (this.activeTabId === 'home') this.initHomeView();
-                        if (this.activeTabId === 'homework') this.renderHomeworkGrid();
+                        else if (this.activeTabId === 'homework') this.renderHomeworkGrid();
+                        else this.renderCustomTabView(this.activeTabId);
                         
                         if(statusEl) {
                              statusEl.className = "text-xs text-green-700 flex items-center mr-2 font-bold bg-green-50 px-2 py-1 rounded-full border border-green-200";
                              statusEl.innerHTML = '<i class="fas fa-check-circle mr-1"></i> 雲端同步完成';
                         }
                     } else {
-                        // 如果資料庫是空的，上傳預設資料
                         this.saveToCloud();
-                    }
-                }, (error) => {
-                    console.error("讀取錯誤:", error);
-                    if(statusEl) {
-                         statusEl.className = "text-xs text-red-600 flex items-center mr-2 font-bold bg-red-50 px-2 py-1 rounded-full";
-                         statusEl.innerHTML = '<i class="fas fa-times-circle mr-1"></i> 連線遭拒絕 (請檢查資料庫規則)';
                     }
                 });
             },
@@ -303,49 +333,183 @@
             saveToCloud: function() {
                 if (!docRef) return;
                 const statusEl = document.getElementById('sync-status');
-                if (statusEl) {
-                    statusEl.className = "text-xs text-blue-600 flex items-center mr-2 font-bold bg-blue-50 px-2 py-1 rounded-full";
-                    statusEl.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i> 上傳中...';
-                }
+                if (statusEl) { statusEl.className = "text-xs text-blue-600 flex items-center mr-2 font-bold bg-blue-50 px-2 py-1 rounded-full"; statusEl.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i> 上傳中...'; }
 
                 if (this.saveTimeout) clearTimeout(this.saveTimeout);
                 this.saveTimeout = setTimeout(async () => {
                     try {
                         await setDoc(docRef, { settings: this.settings, data: this.data }, { merge: true });
-                        if (statusEl) {
-                            statusEl.className = "text-xs text-green-700 flex items-center mr-2 font-bold bg-green-50 px-2 py-1 rounded-full border border-green-200";
-                            statusEl.innerHTML = '<i class="fas fa-cloud-upload-alt mr-1"></i> 已儲存至雲端';
-                        }
-                    } catch (e) {
-                        console.error("儲存失敗:", e);
-                        if (statusEl) statusEl.innerHTML = '<span class="text-red-500">上傳失敗</span>';
-                    }
+                        if (statusEl) { statusEl.className = "text-xs text-green-700 flex items-center mr-2 font-bold bg-green-50 px-2 py-1 rounded-full border border-green-200"; statusEl.innerHTML = '<i class="fas fa-cloud-upload-alt mr-1"></i> 已儲存至雲端'; }
+                    } catch (e) { console.error("儲存失敗:", e); }
                 }, 800);
             },
 
-            // 以下為畫面操作邏輯
-            saveSettings: function() {
-                this.settings.duty1 = document.getElementById('duty-1').value;
-                this.settings.duty2 = document.getElementById('duty-2').value;
-                this.settings.reminderText = document.getElementById('reminder-text').value;
+            renderTabs: function() {
+                const container = document.getElementById('tabs-container'); 
+                container.innerHTML = '';
+                
+                this.tabs.forEach(tab => this.createTabElement(container, tab, false));
+                if (this.data.customTabs) {
+                    this.data.customTabs.forEach(tab => this.createTabElement(container, tab, true));
+                }
+            },
+            
+            createTabElement: function(container, tab, isCustom) {
+                const el = document.createElement('div'); 
+                el.className = `tab-btn ${tab.id === this.activeTabId ? 'tab-active' : 'tab-inactive'}`;
+                el.onclick = () => this.switchTab(tab.id);
+                
+                const iconClass = isCustom ? 'fa-globe' : (tab.icon || 'fa-folder-open');
+                el.innerHTML = `<i class="fas ${iconClass} mr-2"></i><span>${tab.title}</span>`;
+                
+                if (isCustom) {
+                    const editBtn = document.createElement('div');
+                    editBtn.className = 'tab-edit-btn';
+                    editBtn.title = "修改或替換此分頁";
+                    editBtn.innerHTML = '<i class="fas fa-pen text-xs"></i>';
+                    editBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); app.openEditTabModal(tab.id); });
+                    el.appendChild(editBtn);
+                }
+                
+                container.appendChild(el);
+            },
+
+            switchTab: function(tabId) {
+                this.activeTabId = tabId; 
+                this.renderTabs(); 
+                const main = document.getElementById('main-content'); 
+                main.innerHTML = '';
+                
+                if (tabId === 'home') { 
+                    main.appendChild(document.getElementById('template-home').firstElementChild.cloneNode(true)); 
+                    this.initHomeView(); 
+                } 
+                else if (tabId === 'homework') { 
+                    main.appendChild(document.getElementById('template-homework').firstElementChild.cloneNode(true)); 
+                    this.renderHomeworkGrid(); 
+                }
+                else { this.renderCustomTabView(tabId); }
+            },
+
+            openAddTabModal: function() {
+                this.editingTabId = null;
+                document.getElementById('modal-title').innerHTML = '<i class="fas fa-plus-circle mr-2 text-blue-500"></i> 新增自訂分頁';
+                document.getElementById('modal-submit-btn').innerHTML = '<i class="fas fa-save mr-1"></i> 新增分頁';
+                document.getElementById('new-tab-title').value = '';
+                document.getElementById('new-tab-code').value = '';
+                document.getElementById('add-tab-modal').classList.remove('hidden');
+            },
+
+            openEditTabModal: function(tabId) {
+                this.editingTabId = tabId;
+                const tabData = this.data.customTabs.find(t => t.id === tabId);
+                if (!tabData) return;
+                document.getElementById('modal-title').innerHTML = '<i class="fas fa-pen mr-2 text-blue-500"></i> 修改分頁內容';
+                document.getElementById('modal-submit-btn').innerHTML = '<i class="fas fa-check mr-1"></i> 儲存修改';
+                document.getElementById('new-tab-title').value = tabData.title;
+                document.getElementById('new-tab-code').value = tabData.content || ''; 
+                document.getElementById('add-tab-modal').classList.remove('hidden');
+            },
+
+            closeAddTabModal: function() { document.getElementById('add-tab-modal').classList.add('hidden'); },
+
+            confirmAddOrEditTab: async function() {
+                const title = document.getElementById('new-tab-title').value.trim();
+                let input = document.getElementById('new-tab-code').value.trim();
+
+                if (!title || !input) { alert('請輸入名稱與網址(或代碼)！'); return; }
+
+                // YouTube 與 Wordwall 網址自動轉換
+                input = input.replace(/youtube\.com\/watch\?v=([^&"\s]+)/g, 'youtube.com/embed/$1');
+                input = input.replace(/youtu\.be\/([^?"\s]+)/g, 'youtube.com/embed/$1');
+                input = input.replace(/\/(?:tc\/)?(?:resource|play)\/([^/"\s]+)(?:\/([^"\s]*))?/g, '/embed/$1');
+
+                if (!this.data.customTabs) this.data.customTabs = [];
+                
+                let targetTabId;
+                if (this.editingTabId) {
+                    const tabIndex = this.data.customTabs.findIndex(t => t.id === this.editingTabId);
+                    if (tabIndex > -1) {
+                        this.data.customTabs[tabIndex].title = title;
+                        this.data.customTabs[tabIndex].content = input;
+                    }
+                    targetTabId = this.editingTabId;
+                } else {
+                    const newId = 'embed_' + Date.now();
+                    this.data.customTabs.push({ id: newId, title: title, content: input });
+                    targetTabId = newId;
+                }
+                
+                this.closeAddTabModal();
+                this.activeTabId = targetTabId;
+                this.renderTabs();
+                this.switchTab(targetTabId);
                 this.saveToCloud();
+            },
+
+            // ==========================================
+            // 🔥 終極沙盒隔離渲染引擎 (解決 AI 代碼失效與排版跑掉) 🔥
+            // ==========================================
+            renderCustomTabView: function(tabId) {
+                const main = document.getElementById('main-content');
+                const tabData = this.data.customTabs.find(t => t.id === tabId);
+                if (!tabData) return;
+                
+                main.innerHTML = `
+                    <div class="w-full h-full relative group bg-white">
+                        <div class="absolute top-2 right-4 bg-black/60 text-white px-3 py-1.5 rounded-lg text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg backdrop-blur-sm">
+                            <i class="fas fa-info-circle mr-1"></i> ${tabData.title}
+                        </div>
+                        <!-- 使用絕對定位確保容器100%填滿，不會被其他元素擠壓 -->
+                        <div id="embed-wrapper-${tabId}" class="absolute inset-0 w-full h-full overflow-hidden">
+                        </div>
+                    </div>
+                `;
+
+                const wrapper = document.getElementById(`embed-wrapper-${tabId}`);
+                const content = tabData.content.trim();
+
+                const isIframe = content.toLowerCase().startsWith('<iframe') || content.toLowerCase().includes('<iframe');
+                const isURL = (content.startsWith('http://') || content.startsWith('https://')) && !content.includes('<');
+
+                if (isURL) {
+                    // 情境一：純網址 -> 直接包裝 iframe
+                    const iframe = document.createElement('iframe');
+                    iframe.src = content;
+                    iframe.style.position = 'absolute'; iframe.style.top = '0'; iframe.style.left = '0';
+                    iframe.style.width = '100%'; iframe.style.height = '100%'; iframe.style.border = 'none';
+                    iframe.setAttribute('allow', 'autoplay; fullscreen; microphone; camera; display-capture');
+                    wrapper.appendChild(iframe);
+                } else if (isIframe && !content.toLowerCase().includes('<!doctype html>')) {
+                    // 情境二：單純的 Iframe 嵌入碼 -> 移除捲動限制並強制滿版
+                    wrapper.innerHTML = content;
+                    const iframes = wrapper.querySelectorAll('iframe');
+                    iframes.forEach(iframe => {
+                        iframe.style.position = 'absolute'; iframe.style.top = '0'; iframe.style.left = '0';
+                        iframe.style.width = '100%'; iframe.style.height = '100%'; iframe.style.border = 'none';
+                        iframe.removeAttribute('scrolling');
+                        if (!iframe.hasAttribute('allow')) iframe.setAttribute('allow', 'autoplay; fullscreen; microphone; camera; display-capture');
+                    });
+                } else {
+                    // 🔥 情境三 (最重要)：完整 HTML 原始碼 (如 Canva AI) -> 啟用 srcdoc 沙盒機制
+                    // 利用 iframe 的 srcdoc 屬性，創造一個獨立的微型瀏覽器環境，
+                    // 這樣它內部的 window.onload 等載入事件就會正常觸發，且 CSS 完全不會跟黑板打架！
+                    const iframe = document.createElement('iframe');
+                    iframe.style.position = 'absolute'; iframe.style.top = '0'; iframe.style.left = '0';
+                    iframe.style.width = '100%'; iframe.style.height = '100%'; iframe.style.border = 'none';
+                    iframe.setAttribute('allow', 'autoplay; fullscreen; microphone; camera; display-capture');
+                    iframe.srcdoc = content; // 將 HTML 原始碼灌入沙盒
+                    wrapper.appendChild(iframe);
+                }
+            },
+
+            // --- 其他原生功能 ---
+            saveSettings: function() {
+                this.settings.duty1 = document.getElementById('duty-1').value; this.settings.duty2 = document.getElementById('duty-2').value;
+                this.settings.reminderText = document.getElementById('reminder-text').value; this.saveToCloud();
             },
             getMonday: function(d) { d = new Date(d); const day = d.getDay(), diff = d.getDate() - day + (day == 0 ? -6 : 1); return new Date(d.setDate(diff)); },
             formatDate: function(date) { return date.toISOString().split('T')[0]; },
-            renderTabs: function() {
-                const container = document.getElementById('tabs-container'); container.innerHTML = '';
-                this.tabs.forEach(tab => {
-                    const el = document.createElement('div'); el.className = `tab-btn ${tab.id === this.activeTabId ? 'tab-active' : 'tab-inactive'}`;
-                    el.onclick = () => this.switchTab(tab.id);
-                    el.innerHTML = `<i class="fas ${tab.icon || 'fa-file'} mr-2"></i><span>${tab.title}</span>`;
-                    container.appendChild(el);
-                });
-            },
-            switchTab: function(tabId) {
-                this.activeTabId = tabId; this.renderTabs(); const main = document.getElementById('main-content'); main.innerHTML = '';
-                if (tabId === 'home') { main.appendChild(document.getElementById('template-home').firstElementChild.cloneNode(true)); this.initHomeView(); } 
-                else if (tabId === 'homework') { main.appendChild(document.getElementById('template-homework').firstElementChild.cloneNode(true)); this.renderHomeworkGrid(); }
-            },
             initHomeView: function() {
                 document.getElementById('duty-1').value = this.settings.duty1 || ''; document.getElementById('duty-2').value = this.settings.duty2 || '';
                 const reminder = document.getElementById('reminder-text');
@@ -359,8 +523,7 @@
                     const now = new Date(); const timeEl = document.getElementById('clock-time'); const dateEl = document.getElementById('clock-date');
                     if (timeEl) timeEl.textContent = now.toLocaleTimeString('zh-TW', { hour12: false });
                     if (dateEl) dateEl.textContent = now.toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
-                };
-                setInterval(update, 1000); update();
+                }; setInterval(update, 1000); update();
             },
             adjustFontSize: function(delta) { this.settings.reminderFontSize += delta; document.getElementById('reminder-text').style.fontSize = this.settings.reminderFontSize + 'px'; this.saveToCloud(); },
             updateReminderStyle: function() { this.settings.reminderColor = document.getElementById('reminder-color').value; document.getElementById('reminder-text').style.color = this.settings.reminderColor; this.saveToCloud(); },
@@ -414,7 +577,7 @@
                     }
                     cell.innerHTML = contentHtml; container.appendChild(cell);
                 }
-                document.getElementById('pending-count-badge').textContent = pendingCount; this.renderPrintView(pendingCount);
+                document.getElementById('pending-count-badge').textContent = pendingCount;
             },
             openHomeworkModal: function(studentId) {
                 this.currentEditingStudent = studentId; document.getElementById('modal-student-id').textContent = studentId;
@@ -451,26 +614,12 @@
             addHomeworkType: function() {
                 const input = document.getElementById('new-hw-type'); const val = input.value.trim();
                 if (val && !this.settings.homeworkTypes.includes(val)) { this.settings.homeworkTypes.push(val); input.value = ''; this.saveToCloud(); this.renderHomeworkGrid(); alert('已新增作業項目：' + val); }
-            },
-            renderPrintView: function() {
-                document.getElementById('print-date').textContent = '日期：' + this.currentHomeworkDate;
-                const tbody = document.getElementById('print-table-body'); tbody.innerHTML = '';
-                const dateKey = this.currentHomeworkDate; const dayRecord = this.data.homework[dateKey] || {}; let hasData = false;
-                for(let i=1; i<=29; i++) { 
-                     const studentData = dayRecord[i] || {};
-                     const missingItems = Object.entries(studentData).filter(([k, v]) => v === 'missing').map(([k, v]) => k);
-                     if (missingItems.length > 0) {
-                         hasData = true; const tr = document.createElement('tr');
-                         tr.innerHTML = `<td class="border border-black px-4 py-2 text-center text-xl font-bold">${i}</td><td class="border border-black px-4 py-2 text-xl">${missingItems.join('、')}</td>`;
-                         tbody.appendChild(tr);
-                     }
-                }
-                if (!hasData) tbody.innerHTML = '<tr><td colspan="2" class="text-center p-4 text-gray-500">今日無缺交紀錄，太棒了！</td></tr>';
             }
         };
 
-        window.addEventListener('DOMContentLoaded', () => { app.init(); });
         window.app = app;
+        window.addEventListener('DOMContentLoaded', () => { app.init(); });
+        
     </script>
 </body>
 </html>
