@@ -320,10 +320,6 @@
             setupDragAndDrop();
             updateClock();
             setInterval(updateClock,1000);
-            
-            // Modified: Wait for parent data, not local
-            // loadSavedData();
-            
             document.getElementById('customTitleInput').addEventListener('keypress',e=>{if(e.key==='Enter')addCustomTitle()});
         };
         
@@ -386,7 +382,7 @@
                         if(confirm(`確定要刪除標題「${title}」嗎？`)){
                             defaultTitles.splice(index,1);
                             createTitleChips();
-                            saveData(); // Changed to use centralized sync
+                            saveData();
                             showNotification(`已刪除標題「${title}」`);
                         }
                     }else showNotification('無法刪除系統預設標題');
@@ -450,9 +446,9 @@
             if(el)el.textContent=t;
         }
         
-        // --- Modified: Cloud Sync Logic ---
+        // --- 核心修改：雲端同步邏輯 ---
         function saveData(){
-            // Send entire state to parent
+            // 將所有狀態打包送出，完全繞過 localStorage
             const payload = {
                 selectedNumbers: selectedNumbers,
                 correctionTitles: correctionTitles,
@@ -473,12 +469,12 @@
             showNotification(`已新增標題「${t}」`);
         }
         
-        // --- Listen for data from parent ---
+        // --- 監聽主視窗傳來的雲端資料 ---
         function updateUI(){
-            // Update inputs
+            // 更新所有輸入框
             document.querySelectorAll('.frame-title-input').forEach((input,i)=>input.value=correctionTitles[i]||'');
             
-            // Update grids
+            // 更新所有數字格狀態
             for(let f=0;f<FRAMES_COUNT;f++){
                 document.querySelectorAll(`#grid-${f} .number-item`).forEach(item=>{
                     const n=parseInt(item.dataset.number);
@@ -487,7 +483,7 @@
                 });
             }
             
-            // Re-render chips as defaultTitles might have changed
+            // 更新標題按鈕
             createTitleChips();
         }
         
@@ -510,7 +506,7 @@
             setTimeout(()=>n.style.display='none',3000);
         }
         
-        // Removed unnecessary local share functions that might cause confusion in iframe
+        // 隱藏不適用的分享功能
         function shareLink(){ alert('請使用主控台的分享功能'); }
         function hideShareDialog(){ document.getElementById('overlay').style.display='none'; document.getElementById('shareDialog').style.display='none'; }
         function copyShareUrl(){} 
@@ -570,7 +566,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
  
-        // 使用您提供的正確金鑰
         const firebaseConfig = {
             apiKey: "AIzaSyAT9VXm8gf5Pn4A1iu3xXF6X8Ve9NYlUAk", 
             authDomain: "teacherboard-9224d.firebaseapp.com",
