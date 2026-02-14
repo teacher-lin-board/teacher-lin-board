@@ -236,8 +236,8 @@
             </div>
         </div>
 
-        <!-- 嵌入分頁程式碼模板 (座號訂正系統 - 新版，已整合雲端同步) -->
-        <textarea id="code-correction" style="display:none;">
+        <!-- 嵌入分頁程式碼模板 (座號訂正系統 - 6格版，已整合雲端同步，移除 localStorage) -->
+        <textarea id="code-correction-6frame" style="display:none;">
 <!doctype html>
 <html lang="zh-TW">
  <head>
@@ -382,7 +382,7 @@
                         if(confirm(`確定要刪除標題「${title}」嗎？`)){
                             defaultTitles.splice(index,1);
                             createTitleChips();
-                            saveData();
+                            saveData(); 
                             showNotification(`已刪除標題「${title}」`);
                         }
                     }else showNotification('無法刪除系統預設標題');
@@ -446,15 +446,14 @@
             if(el)el.textContent=t;
         }
         
-        // --- 核心修改：雲端同步邏輯 ---
+        // --- 核心修正：改用雲端傳訊取代 localStorage ---
         function saveData(){
-            // 將所有狀態打包送出，完全繞過 localStorage
             const payload = {
-                selectedNumbers: selectedNumbers,
-                correctionTitles: correctionTitles,
-                defaultTitles: defaultTitles
+                selectedNumbers,
+                correctionTitles,
+                defaultTitles
             };
-            window.parent.postMessage({ type: 'SAVE_APP_DATA', appId: 'correction', payload: payload }, '*');
+            window.parent.postMessage({ type: 'SAVE_APP_DATA', appId: 'correction_6frame', payload: payload }, '*');
         }
         
         function addCustomTitle(){
@@ -469,12 +468,10 @@
             showNotification(`已新增標題「${t}」`);
         }
         
-        // --- 監聽主視窗傳來的雲端資料 ---
+        // --- 接收父視窗傳來的雲端資料 ---
         function updateUI(){
-            // 更新所有輸入框
             document.querySelectorAll('.frame-title-input').forEach((input,i)=>input.value=correctionTitles[i]||'');
             
-            // 更新所有數字格狀態
             for(let f=0;f<FRAMES_COUNT;f++){
                 document.querySelectorAll(`#grid-${f} .number-item`).forEach(item=>{
                     const n=parseInt(item.dataset.number);
@@ -482,8 +479,6 @@
                     else item.classList.remove('selected');
                 });
             }
-            
-            // 更新標題按鈕
             createTitleChips();
         }
         
@@ -506,7 +501,6 @@
             setTimeout(()=>n.style.display='none',3000);
         }
         
-        // 隱藏不適用的分享功能
         function shareLink(){ alert('請使用主控台的分享功能'); }
         function hideShareDialog(){ document.getElementById('overlay').style.display='none'; document.getElementById('shareDialog').style.display='none'; }
         function copyShareUrl(){} 
@@ -566,6 +560,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
  
+        // 您的 Firebase 金鑰
         const firebaseConfig = {
             apiKey: "AIzaSyAT9VXm8gf5Pn4A1iu3xXF6X8Ve9NYlUAk", 
             authDomain: "teacherboard-9224d.firebaseapp.com",
@@ -582,7 +577,7 @@
             tabs: [ 
                 { id: 'home', title: '聯絡簿', type: 'system', icon: 'fa-home' }, 
                 { id: 'homework', title: '作業管理', type: 'system', icon: 'fa-book' },
-                { id: 'correction', title: '訂正系統', type: 'embedded', icon: 'fa-check-square' }
+                { id: 'correction_6frame', title: '訂正系統', type: 'embedded', icon: 'fa-check-square' }
             ],
             settings: { 
                 reminderText: '', reminderColor: '#000000', reminderFontSize: 24, reminderBlink: false, 
@@ -624,13 +619,13 @@
                     if(statusEl) statusEl.innerHTML = '<span class="text-gray-500 bg-gray-200 px-3 py-1 rounded-full"><i class="fas fa-hdd"></i> 本地模式</span>';
                 }
 
-                // 設置跨視窗監聽
+                // 設置跨視窗監聽 - 這是接收訂正系統資料的關鍵
                 window.addEventListener('message', (event) => {
                     if (event.data.type === 'SAVE_APP_DATA') {
                         const { appId, payload } = event.data;
                         if (!this.data.apps) this.data.apps = {};
                         this.data.apps[appId] = payload;
-                        this.saveToCloud();
+                        this.saveToCloud(); // 收到子視窗資料後立即上傳雲端
                     }
                 });
             },
@@ -653,11 +648,10 @@
                         
                         if (this.activeTabId === 'home') this.initHomeView();
                         else if (this.activeTabId === 'homework') this.renderHomeworkGrid();
-                        // 如果當前是嵌入頁面，嘗試更新它
-                        else if (this.activeTabId === 'correction') {
-                            // 找到 iframe 並傳送新數據
+                        else if (this.activeTabId === 'correction_6frame') {
                             const iframe = document.querySelector('.embedded-frame');
                             if (iframe && iframe.contentWindow && this.data.apps && this.data.apps[this.activeTabId]) {
+                                // 將雲端資料送回子視窗
                                 iframe.contentWindow.postMessage({ type: 'LOAD_APP_DATA', payload: this.data.apps[this.activeTabId] }, '*');
                             }
                         }
@@ -698,11 +692,11 @@
             saveToCloud: function() {
                 const statusEl = document.getElementById('sync-status');
                 
+                // 嘗試寫入本地 (防崩潰)
                 try {
-                    // 安全嘗試本地備份
                     localStorage.setItem('teacherBoardData', JSON.stringify({ settings: this.settings, data: this.data }));
                 } catch (e) {
-                    // 靜默失敗
+                    // 靜默失敗，不影響雲端上傳
                 }
 
                 if (isOffline) {
@@ -731,7 +725,7 @@
                     } catch (e) {
                         console.error("儲存失敗:", e);
                         if (statusEl) statusEl.innerHTML = '<span class="text-red-500">儲存失敗</span>';
-                        isOffline = true;
+                        // 這裡不切換到 isOffline，讓它有機會重試
                     }
                 }, 800);
             },
@@ -789,8 +783,8 @@
                     const dateInput = document.getElementById('homework-date');
                     if(dateInput) dateInput.value = this.currentHomeworkDate;
                     this.renderHomeworkGrid();
-                } else if (tabId === 'correction') {
-                    this.renderEmbeddedTab('correction'); 
+                } else if (tabId === 'correction_6frame') {
+                    this.renderEmbeddedTab('correction-6frame'); 
                 } else {
                     const tabData = this.data.customTabs.find(t => t.id === tabId);
                     if (tabData) this.renderCustomTabView(tabData);
