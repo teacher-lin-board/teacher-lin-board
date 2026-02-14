@@ -320,6 +320,10 @@
             setupDragAndDrop();
             updateClock();
             setInterval(updateClock,1000);
+            
+            // Modified: Wait for parent data, not local
+            // loadSavedData();
+            
             document.getElementById('customTitleInput').addEventListener('keypress',e=>{if(e.key==='Enter')addCustomTitle()});
         };
         
@@ -382,7 +386,7 @@
                         if(confirm(`確定要刪除標題「${title}」嗎？`)){
                             defaultTitles.splice(index,1);
                             createTitleChips();
-                            saveData();
+                            saveData(); // Changed to use centralized sync
                             showNotification(`已刪除標題「${title}」`);
                         }
                     }else showNotification('無法刪除系統預設標題');
