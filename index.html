@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>班級黑板 - 專屬雲端版 (整合系統)</title>
+    <title>班級黑板 - 專屬雲端版</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -236,8 +236,8 @@
             </div>
         </div>
 
-        <!-- 嵌入分頁程式碼模板 (訂正登記 - 100% 原始程式碼，只添加最後的同步腳本) -->
-        <textarea id="code-correction" style="display:none;">
+        <!-- 嵌入分頁程式碼模板 (座號訂正系統 - 新版，已整合雲端同步，移除 localStorage) -->
+        <textarea id="code-correction-new" style="display:none;">
 <!doctype html>
 <html lang="zh-TW">
  <head>
@@ -457,7 +457,7 @@
                 correctionTitles,
                 defaultTitles
             };
-            window.parent.postMessage({ type: 'SAVE_APP_DATA', appId: 'correction', payload: payload }, '*');
+            window.parent.postMessage({ type: 'SAVE_APP_DATA', appId: 'correction_new', payload: payload }, '*');
         }
         
         function addCustomTitle(){
@@ -505,7 +505,6 @@
             setTimeout(()=>n.style.display='none',3000);
         }
         
-        // 隱藏不適用的分享功能
         function shareLink(){ alert('請使用主控台的分享功能'); }
         function hideShareDialog(){ document.getElementById('overlay').style.display='none'; document.getElementById('shareDialog').style.display='none'; }
         function copyShareUrl(){} 
@@ -655,9 +654,11 @@
                         else if (this.activeTabId === 'homework') this.renderHomeworkGrid();
                         else if (this.activeTabId === 'correction') {
                             const iframe = document.querySelector('.embedded-frame');
-                            if (iframe && iframe.contentWindow && this.data.apps && this.data.apps[this.activeTabId]) {
+                            // 這裡 key 對應到 iframe 載入時傳送的 ID
+                            const correctionKey = 'correction_new'; 
+                            if (iframe && iframe.contentWindow && this.data.apps && this.data.apps[correctionKey]) {
                                 // 將雲端資料送回子視窗
-                                iframe.contentWindow.postMessage({ type: 'LOAD_APP_DATA', payload: this.data.apps[this.activeTabId] }, '*');
+                                iframe.contentWindow.postMessage({ type: 'LOAD_APP_DATA', payload: this.data.apps[correctionKey] }, '*');
                             }
                         }
                         
@@ -701,7 +702,7 @@
                 try {
                     localStorage.setItem('teacherBoardData', JSON.stringify({ settings: this.settings, data: this.data }));
                 } catch (e) {
-                    // 靜默失敗，不影響雲端上傳
+                    // 靜默失敗
                 }
 
                 if (isOffline) {
@@ -789,7 +790,7 @@
                     if(dateInput) dateInput.value = this.currentHomeworkDate;
                     this.renderHomeworkGrid();
                 } else if (tabId === 'correction') {
-                    this.renderEmbeddedTab('correction'); 
+                    this.renderEmbeddedTab('correction-new'); 
                 } else {
                     const tabData = this.data.customTabs.find(t => t.id === tabId);
                     if (tabData) this.renderCustomTabView(tabData);
@@ -809,7 +810,7 @@
                 
                 // 載入時注入當前數據
                 iframe.onload = () => {
-                    const appId = this.activeTabId; 
+                    const appId = 'correction_new'; // 與子視窗約定的 ID
                     if (this.data.apps && this.data.apps[appId]) {
                         iframe.contentWindow.postMessage({ type: 'LOAD_APP_DATA', payload: this.data.apps[appId] }, '*');
                     }
