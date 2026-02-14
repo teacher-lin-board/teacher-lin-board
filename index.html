@@ -236,7 +236,7 @@
             </div>
         </div>
 
-        <!-- 嵌入分頁程式碼模板 (座號訂正系統 - 新版) -->
+        <!-- 嵌入分頁程式碼模板 (座號訂正系統 - 新版，已整合雲端同步) -->
         <textarea id="code-correction" style="display:none;">
 <!doctype html>
 <html lang="zh-TW">
@@ -320,10 +320,6 @@
             setupDragAndDrop();
             updateClock();
             setInterval(updateClock,1000);
-            
-            // Modified: Wait for parent data, not local
-            // loadSavedData();
-            
             document.getElementById('customTitleInput').addEventListener('keypress',e=>{if(e.key==='Enter')addCustomTitle()});
         };
         
@@ -386,7 +382,7 @@
                         if(confirm(`確定要刪除標題「${title}」嗎？`)){
                             defaultTitles.splice(index,1);
                             createTitleChips();
-                            saveData(); // Changed to use centralized sync
+                            saveData();
                             showNotification(`已刪除標題「${title}」`);
                         }
                     }else showNotification('無法刪除系統預設標題');
@@ -450,15 +446,15 @@
             if(el)el.textContent=t;
         }
         
-        // --- 核心修改：改為雲端同步模式 ---
+        // --- Modified: Cloud Sync Logic ---
         function saveData(){
-            // 將所有狀態打包送出
+            // Send entire state to parent
             const payload = {
-                selectedNumbers,
-                correctionTitles,
-                defaultTitles // 同步自訂標題
+                selectedNumbers: selectedNumbers,
+                correctionTitles: correctionTitles,
+                defaultTitles: defaultTitles
             };
-            window.parent.postMessage({ type: 'SAVE_APP_DATA', appId: 'correction_v2', payload: payload }, '*');
+            window.parent.postMessage({ type: 'SAVE_APP_DATA', appId: 'correction', payload: payload }, '*');
         }
         
         function addCustomTitle(){
@@ -469,25 +465,16 @@
             defaultTitles.push(t);
             input.value='';
             createTitleChips();
-            saveData(); // Changed to sync
+            saveData();
             showNotification(`已新增標題「${t}」`);
         }
         
-        // --- 核心修改：移除本地存取，改為接收父視窗資料 ---
-        /*
-        function saveCustomTitles(){localStorage.setItem('customTitles',JSON.stringify(defaultTitles))}
-        function loadCustomTitles(){
-            const s=localStorage.getItem('customTitles');
-            if(s)try{defaultTitles=JSON.parse(s)}catch(e){console.error('無法解析自訂標題',e)}
-        }
-        function loadSavedData(){ ... }
-        */
-       
+        // --- Listen for data from parent ---
         function updateUI(){
-            // 更新標題輸入框
+            // Update inputs
             document.querySelectorAll('.frame-title-input').forEach((input,i)=>input.value=correctionTitles[i]||'');
             
-            // 更新數字格
+            // Update grids
             for(let f=0;f<FRAMES_COUNT;f++){
                 document.querySelectorAll(`#grid-${f} .number-item`).forEach(item=>{
                     const n=parseInt(item.dataset.number);
@@ -496,18 +483,10 @@
                 });
             }
             
-            // 更新標題 Chips (如果有同步過來)
+            // Re-render chips as defaultTitles might have changed
             createTitleChips();
         }
         
-        function showNotification(m){
-            const n=document.getElementById('notification');
-            n.textContent=m;
-            n.style.display='block';
-            setTimeout(()=>n.style.display='none',3000);
-        }
-
-        // 監聽來自父視窗的資料載入
         window.addEventListener('message', (e) => {
             if (e.data.type === 'LOAD_APP_DATA') {
                 const d = e.data.payload;
@@ -515,11 +494,22 @@
                     if(d.selectedNumbers) selectedNumbers = d.selectedNumbers;
                     if(d.correctionTitles) correctionTitles = d.correctionTitles;
                     if(d.defaultTitles && Array.isArray(d.defaultTitles)) defaultTitles = d.defaultTitles;
-                    
                     updateUI();
                 }
             }
         });
+        
+        function showNotification(m){
+            const n=document.getElementById('notification');
+            n.textContent=m;
+            n.style.display='block';
+            setTimeout(()=>n.style.display='none',3000);
+        }
+        
+        // Removed unnecessary local share functions that might cause confusion in iframe
+        function shareLink(){ alert('請使用主控台的分享功能'); }
+        function hideShareDialog(){ document.getElementById('overlay').style.display='none'; document.getElementById('shareDialog').style.display='none'; }
+        function copyShareUrl(){} 
     </script>
  </body>
 </html>
@@ -576,6 +566,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
  
+        // 使用您提供的正確金鑰
         const firebaseConfig = {
             apiKey: "AIzaSyAT9VXm8gf5Pn4A1iu3xXF6X8Ve9NYlUAk", 
             authDomain: "teacherboard-9224d.firebaseapp.com",
@@ -592,7 +583,7 @@
             tabs: [ 
                 { id: 'home', title: '聯絡簿', type: 'system', icon: 'fa-home' }, 
                 { id: 'homework', title: '作業管理', type: 'system', icon: 'fa-book' },
-                { id: 'correction_v2', title: '訂正登記', type: 'embedded', icon: 'fa-check-square' }
+                { id: 'correction', title: '訂正系統', type: 'embedded', icon: 'fa-check-square' }
             ],
             settings: { 
                 reminderText: '', reminderColor: '#000000', reminderFontSize: 24, reminderBlink: false, 
@@ -664,7 +655,7 @@
                         if (this.activeTabId === 'home') this.initHomeView();
                         else if (this.activeTabId === 'homework') this.renderHomeworkGrid();
                         // 如果當前是嵌入頁面，嘗試更新它
-                        else if (this.activeTabId === 'correction_v2') {
+                        else if (this.activeTabId === 'correction') {
                             // 找到 iframe 並傳送新數據
                             const iframe = document.querySelector('.embedded-frame');
                             if (iframe && iframe.contentWindow && this.data.apps && this.data.apps[this.activeTabId]) {
@@ -701,7 +692,6 @@
                         else if (this.activeTabId === 'homework') this.renderHomeworkGrid();
                     }
                 } catch (e) {
-                    // 安全捕獲 localStorage 禁止存取的錯誤
                     console.warn("LocalStorage access denied or error:", e);
                 }
             },
@@ -713,7 +703,7 @@
                     // 安全嘗試本地備份
                     localStorage.setItem('teacherBoardData', JSON.stringify({ settings: this.settings, data: this.data }));
                 } catch (e) {
-                    // 靜默失敗，不崩潰
+                    // 靜默失敗
                 }
 
                 if (isOffline) {
@@ -800,8 +790,8 @@
                     const dateInput = document.getElementById('homework-date');
                     if(dateInput) dateInput.value = this.currentHomeworkDate;
                     this.renderHomeworkGrid();
-                } else if (tabId === 'correction_v2') {
-                    this.renderEmbeddedTab('correction'); // Mapping ID to template ID
+                } else if (tabId === 'correction') {
+                    this.renderEmbeddedTab('correction'); 
                 } else {
                     const tabData = this.data.customTabs.find(t => t.id === tabId);
                     if (tabData) this.renderCustomTabView(tabData);
@@ -821,7 +811,7 @@
                 
                 // 載入時注入當前數據
                 iframe.onload = () => {
-                    const appId = this.activeTabId; // 'correction_v2'
+                    const appId = this.activeTabId; 
                     if (this.data.apps && this.data.apps[appId]) {
                         iframe.contentWindow.postMessage({ type: 'LOAD_APP_DATA', payload: this.data.apps[appId] }, '*');
                     }
