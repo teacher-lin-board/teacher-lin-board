@@ -7,7 +7,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Noto+Serif+TC:wght@600&family=Mali:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Noto+Serif+TC:wght@600&family=Mali:wght@400;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; background-color: #f3f4f6; overflow: hidden; }
         
@@ -55,8 +55,7 @@
         .cell-tape { position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(-2deg); width: 30px; height: 15px; background-color: rgba(255,255,255,0.4); z-index: 0; }
         .cute-font { font-family: 'Mali', 'Noto Sans TC', cursive; }
 
-        /* === 訂正系統樣式 (來自您的 txt) === */
-        .correction-wrapper { font-family: 'Microsoft JhengHei', sans-serif; padding: 1.5rem; }
+        /* === 訂正系統樣式 === */
         .corr-number-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
         .corr-number-item { display: flex; align-items: center; justify-content: center; height: 40px; background-color: #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s; user-select: none; font-weight: bold; color: #64748b; }
         .corr-number-item:hover { background-color: #cbd5e1; }
@@ -73,9 +72,8 @@
         .time-display { background-color: #3b82f6; color: white; padding: 8px 16px; border-radius: 12px; font-weight: bold; font-size: 24px; white-space: nowrap; text-align: center; }
         .title-selector { background-color: #f1f5f9; border-radius: 10px; padding: 16px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
         .title-chips-container { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; flex: 1; }
-        .title-chip { background-color: #3b82f6; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; user-select: none; transition: all 0.2s; font-weight: 500; font-size: 16px; white-space: nowrap; }
+        .title-chip { background-color: #3b82f6; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; user-select: none; transition: all 0.2s; font-weight: 500; font-size: 16px; white-space: nowap; }
         .title-chip:hover { background-color: #2563eb; transform: translateY(-2px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .title-chip.dragging { opacity: 0.5; }
         .frame-header { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
         .frame-title-input { width: 160px; font-size: 24px; font-weight: bold; padding: 4px 8px; border: 2px solid rgba(0,0,0,0.1); border-radius: 6px; background-color: rgba(255,255,255,0.9); }
         .frame-button { padding: 6px 10px; font-size: 12px; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
@@ -87,11 +85,45 @@
         .add-title-inline { display: flex; align-items: center; gap: 8px; }
         .add-title-input { font-size: 16px; padding: 6px 12px; border: 2px solid #fbbf24; border-radius: 6px; width: 140px; }
         .add-title-btn { font-size: 14px; padding: 6px 12px; background-color: #f59e0b; color: white; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
-        .add-title-btn:hover { background-color: #d97706; }
-
         .frames-container { position: relative; }
         .center-time-wrapper { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; pointer-events: none; }
         @media (min-width: 768px) { .center-time-wrapper { display: block; } }
+
+        /* === 午休登記樣式 === */
+        .nap-bg { background: linear-gradient(to bottom right, #f0f9ff, #eff6ff, #ecfdf5); }
+        .student-ball {
+            width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 16px; cursor: grab; transition: transform .2s, box-shadow .2s; user-select: none;
+            background-color: #3b5998 !important; color: #fff; box-shadow: 0 3px 8px rgba(0,0,0,.1), inset 0 -3px 6px rgba(0,0,0,.05), inset 0 3px 6px rgba(255,255,255,.6);
+        }
+        .student-ball.exempt-style { background-color: #d97706 !important; }
+        .student-ball:hover { transform: scale(1.1); box-shadow: 0 5px 15px rgba(0,0,0,.15); }
+        .student-ball.dragging { opacity: .5; transform: scale(1.15); }
+        .zone { border-radius: 16px; padding: 16px; transition: all .3s; display: flex; flex-direction: column; }
+        .zone.drag-over { transform: scale(1.02); box-shadow: 0 0 20px rgba(255,255,255,.5); }
+        .green-zone { background: linear-gradient(135deg,#d1fae5 0%,#a7f3d0 50%,#6ee7b7 100%); border: 3px solid #6ee7b7; flex: 1; }
+        .yellow-zone { background: linear-gradient(135deg,#fef3c7 0%,#fde68a 50%,#fcd34d 100%); border: 3px solid #fcd34d; flex: 1; }
+        .yellow-sub { background: rgba(255,255,255,.5); border-radius: 12px; padding: 8px; flex: 1; min-height: 0; }
+        .red-zone { background: linear-gradient(135deg,#fed7d7 0%,#fecaca 50%,#fca5a5 100%); border: 3px solid #fca5a5; flex: 1; }
+        .exempt-zone { background: linear-gradient(135deg,#fed7aa 0%,#fdba74 100%); border: 3px dashed #f59e0b; }
+        .next-zone { background: linear-gradient(135deg,#dbeafe 0%,#bfdbfe 100%); border: 3px dashed #93c5fd; }
+        .traffic-light { width: 20px; height: 20px; border-radius: 50%; display: inline-block; box-shadow: inset 0 -2px 4px rgba(0,0,0,.2); }
+        .clock-display { font-family: 'Nunito', monospace; font-weight: 800; font-size: 1.5rem; background: linear-gradient(135deg,#1e293b 0%,#334155 100%); color: #4ade80; padding: 8px 16px; border-radius: 12px; }
+        .message-input { border: 2px solid #e5e7eb; border-radius: 12px; padding: 8px 12px; font-size: .95rem; }
+        .zone-title { font-weight: 700; font-size: .95rem; padding: 6px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 10px; background: rgba(255,255,255,.7); width: fit-content; }
+        .balls-container { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-content: flex-start; flex: 1; overflow-y: auto; }
+
+        /* === 掃地檢查樣式 (完全還原) === */
+        .cleaning-check-bg { background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); }
+        .glass-card { background: rgba(255, 255, 255, 0.95); border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .status-box { cursor: pointer; width: 45px; height: 45px; border-radius: 6px; border: 2px solid #ccc; background: white; transition: all 0.3s ease; font-weight: 700; font-size: 10px; display: flex; align-items: center; justify-content: center; user-select: none; flex-shrink: 0; }
+        .status-box:hover { transform: scale(1.1); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .status-box.completed { background: #3b82f6; color: white; border-color: #3b82f6; }
+        .status-box.passed { background: #10b981; color: white; border-color: #10b981; }
+        .status-box.failed { background: #ef4444; color: white; border-color: #ef4444; }
+        .status-box.recleaned { background: #f97316; color: white; border-color: #f97316; }
+        .status-box.recleaned-passed { background: #8b5cf6; color: white; border-color: #8b5cf6; }
+        .section-divider { width: 2px; background: linear-gradient(to bottom, transparent, #e5e7eb, transparent); }
 
         @media print {
             body { overflow: auto; background: white; }
@@ -238,7 +270,7 @@
             </div>
         </div>
 
-        <!-- 3. 訂正系統模板 (整合版) -->
+        <!-- 3. 訂正系統模板 -->
         <div id="template-correction" class="w-full h-full overflow-y-auto">
              <div class="correction-wrapper max-w-7xl mx-auto">
                 <div class="title-selector mb-8">
@@ -256,30 +288,131 @@
                 </div>
             </div>
         </div>
-    </div>
- 
-    <!-- 新增/修改滿版分頁 Modal -->
-    <div id="add-tab-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 flex flex-col max-h-[90vh]">
-            <h3 id="modal-title" class="text-2xl font-bold text-blue-900 mb-2 border-b-2 border-blue-100 pb-2 flex items-center">
-                 <i class="fas fa-code mr-2 text-blue-500"></i> 新增自訂分頁
-            </h3>
-            <p class="text-sm text-blue-700 mb-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
-                 <i class="fas fa-shield-alt text-green-600 mr-1"></i> <strong>已啟用沙盒隔離技術</strong><br>
-                 您可以貼上 AI 生成的完整 HTML 代碼、任何網址，系統會自動建立獨立環境運行。
-            </p>
-           
-            <div class="mb-4">
-                 <label class="block text-gray-700 font-bold mb-2">1. 分頁名稱</label>
-                 <input type="text" id="new-tab-title" class="w-full border-2 border-gray-200 focus:border-blue-400 p-2 rounded outline-none transition" placeholder="例如：訂正小工具">
-            </div>
-            <div class="mb-6 flex-grow flex flex-col">
-                <label class="block text-gray-700 font-bold mb-2">2. 貼上 HTML 原始碼 或 直接貼網址</label>
-                 <textarea id="new-tab-code" class="w-full border-2 border-gray-200 focus:border-blue-400 p-2 rounded outline-none transition flex-grow resize-none font-mono text-sm h-32" placeholder='請貼上完整 HTML 原始碼、網址或 <iframe ...> 語法'></textarea>
-            </div>
-            <div class="flex justify-end gap-3 mt-auto pt-4 border-t border-gray-100">
-                 <button onclick="app.closeAddTabModal()" class="px-5 py-2 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 transition">取消</button>
-                 <button id="modal-submit-btn" onclick="app.confirmAddOrEditTab()" class="px-5 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-md transition"><i class="fas fa-save mr-1"></i> 儲存分頁</button>
+
+        <!-- 4. 午休登記模板 -->
+        <div id="template-nap" class="w-full h-full nap-bg overflow-y-auto">
+             <div class="w-full h-full p-4 flex flex-col gap-3">
+               <header class="flex items-center justify-center gap-6 pb-2 border-b border-blue-200 flex-shrink-0">
+                <div class="clock-display" id="nap-clock">00:00:00</div>
+                <input type="text" id="teacherMessage" oninput="app.nap.updateMessage(this.value)" class="message-input text-center max-w-2xl" placeholder="安靜午休，好好休息！" value="安靜午休，好好休息！" style="font-size:32px;font-weight:700">
+               </header>
+               <main class="flex-1 grid grid-cols-3 gap-4 min-h-0">
+                <div class="zone green-zone" ondragover="app.nap.handleDragOver(event)" ondrop="app.nap.handleDrop(event, 'green')">
+                    <span class="zone-title text-green-700"><span class="traffic-light bg-emerald-400"></span>🌟 乖寶寶 🌟</span>
+                    <div class="balls-container" id="greenBalls"></div>
+                </div>
+                <div class="zone yellow-zone">
+                    <span class="zone-title text-yellow-700"><span class="traffic-light bg-yellow-400"></span>⚠️ 注意區 ⚠️</span>
+                    <div class="grid grid-cols-1 gap-2 flex-1 min-h-0">
+                      <div class="yellow-sub" ondragover="app.nap.handleDragOver(event)" ondrop="app.nap.handleDrop(event, 'yellow1')">
+                       <div class="text-center text-xs font-bold text-yellow-700 mb-1">😅 提醒一次</div>
+                       <div class="balls-container" id="yellow1Balls"></div>
+                      </div>
+                      <div class="yellow-sub" ondragover="app.nap.handleDragOver(event)" ondrop="app.nap.handleDrop(event, 'yellow2')">
+                       <div class="text-center text-xs font-bold text-yellow-700 mb-1">📝 登記一次</div>
+                       <div class="balls-container" id="yellow2Balls"></div>
+                      </div>
+                      <div class="yellow-sub" ondragover="app.nap.handleDragOver(event)" ondrop="app.nap.handleDrop(event, 'yellow3')">
+                       <div class="text-center text-xs font-bold text-yellow-700 mb-1">📝📝 登記兩次</div>
+                       <div class="balls-container" id="yellow3Balls"></div>
+                      </div>
+                    </div>
+                </div>
+                <div class="zone red-zone" ondragover="app.nap.handleDragOver(event)" ondrop="app.nap.handleDrop(event, 'red')">
+                    <span class="zone-title text-red-700"><span class="traffic-light bg-red-400"></span>🚨 登記三次 🚨</span>
+                    <div class="balls-container" id="redBalls"></div>
+                </div>
+               </main>
+               <div class="grid grid-cols-2 gap-4 h-24 flex-shrink-0">
+                <div class="zone exempt-zone"><span class="zone-title text-orange-800 text-xs">🏠 不可登記區</span>
+                 <div class="flex items-center gap-1 mb-1">
+                  <input type="text" id="exemptInput" class="message-input flex-1 text-xs py-1 px-2" placeholder="輸入座號">
+                  <button onclick="app.nap.addExempt()" class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-2 py-1 rounded text-xs">新增</button>
+                 </div>
+                 <div class="balls-container" id="exemptBalls" style="gap:4px;min-height:40px"></div>
+                </div>
+                <div class="zone next-zone"><span class="zone-title text-blue-700 text-xs">📋 下次登記區</span>
+                 <div class="flex items-center gap-1 mb-1">
+                  <input type="text" id="nextInput" class="message-input flex-1 text-xs py-1 px-2" placeholder="輸入座號">
+                  <button onclick="app.nap.addNext()" class="bg-blue-400 hover:bg-blue-500 text-white font-bold px-2 py-1 rounded text-xs">新增</button>
+                 </div>
+                 <div class="balls-container" id="nextBalls" style="gap:4px;min-height:40px"></div>
+                </div>
+               </div>
+               <div class="text-center">
+                <button onclick="app.nap.resetAll()" class="bg-gradient-to-r from-blue-300 to-blue-400 hover:from-blue-400 hover:to-blue-500 text-white font-bold px-6 py-3 rounded-full shadow-lg hover:scale-105 transition-transform">🔄 重新開始</button>
+               </div>
+             </div>
+        </div>
+
+        <!-- 5. 掃地檢查模板 (功能修復) -->
+        <div id="template-cleaning" class="w-full h-full cleaning-check-bg overflow-y-auto">
+            <div class="h-full flex flex-col p-4">
+                <header class="bg-white shadow-md p-4 rounded-xl mb-4 flex flex-col gap-4">
+                    <h1 class="text-3xl font-bold text-center text-purple-600">雙區域掃地檢查系統</h1>
+                    <div class="flex items-center gap-4 justify-center">
+                        <div id="cleanStatusDisplay" class="flex-1 text-center py-3 rounded-lg font-bold text-lg bg-gray-100 text-gray-700">進行中...</div>
+                        <button onclick="app.cleaning.resetAll()" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 whitespace-nowrap">🔄 全部重置</button>
+                    </div>
+                </header>
+                <div class="flex-1 flex gap-4 overflow-hidden">
+                    <!-- 左側 -->
+                    <div class="flex-1 bg-white rounded-xl shadow-lg flex flex-col overflow-hidden">
+                        <div class="p-6 flex-1 flex flex-col">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-bold text-gray-800">📋 教室區域</h3>
+                                <div class="flex gap-2">
+                                    <button onclick="app.cleaning.showImport('left')" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition">📥 匯入</button>
+                                    <button onclick="app.cleaning.clear('left')" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition">🗑️ 清除</button>
+                                    <button onclick="app.cleaning.add('left')" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition">➕ 新增</button>
+                                </div>
+                            </div>
+                            <div class="flex-1 overflow-y-auto border-2 border-gray-200 rounded-lg bg-white">
+                                <table class="w-full text-sm">
+                                    <thead class="sticky top-0 bg-gradient-to-r from-blue-100 to-blue-200">
+                                        <tr>
+                                            <th class="py-2 px-2 text-left text-gray-800 font-bold border-b-2 border-blue-300 w-12">座號</th>
+                                            <th class="py-2 px-2 text-left text-gray-800 font-bold border-b-2 border-blue-300 w-32">工作項目</th>
+                                            <th class="py-2 px-2 text-center text-gray-800 font-bold border-b-2 border-blue-300 w-16">已打掃</th>
+                                            <th class="py-2 px-2 text-center text-gray-800 font-bold border-b-2 border-blue-300 w-32">檢查</th>
+                                            <th class="py-2 px-2 text-center text-gray-800 font-bold border-b-2 border-blue-300 w-24">再打掃通過</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="leftStudentList"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 分隔線 -->
+                    <div class="section-divider"></div>
+                    <!-- 右側 -->
+                    <div class="flex-1 bg-white rounded-xl shadow-lg flex flex-col overflow-hidden">
+                        <div class="p-6 flex-1 flex flex-col">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-bold text-gray-800">📋 公共區域</h3>
+                                <div class="flex gap-2">
+                                    <button onclick="app.cleaning.showImport('right')" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition">📥 匯入</button>
+                                    <button onclick="app.cleaning.clear('right')" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition">🗑️ 清除</button>
+                                    <button onclick="app.cleaning.add('right')" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition">➕ 新增</button>
+                                </div>
+                            </div>
+                            <div class="flex-1 overflow-y-auto border-2 border-gray-200 rounded-lg bg-white">
+                                <table class="w-full text-sm">
+                                    <thead class="sticky top-0 bg-gradient-to-r from-green-100 to-green-200">
+                                        <tr>
+                                            <th class="py-2 px-2 text-left text-gray-800 font-bold border-b-2 border-green-300 w-12">座號</th>
+                                            <th class="py-2 px-2 text-left text-gray-800 font-bold border-b-2 border-green-300 w-32">工作項目</th>
+                                            <th class="py-2 px-2 text-center text-gray-800 font-bold border-b-2 border-green-300 w-16">已打掃</th>
+                                            <th class="py-2 px-2 text-center text-gray-800 font-bold border-b-2 border-green-300 w-32">檢查</th>
+                                            <th class="py-2 px-2 text-center text-gray-800 font-bold border-b-2 border-green-300 w-24">再打掃通過</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rightStudentList"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -327,7 +460,9 @@
             tabs: [ 
                 { id: 'home', title: '聯絡簿', type: 'system', icon: 'fa-home' }, 
                 { id: 'homework', title: '作業管理', type: 'system', icon: 'fa-book' },
-                { id: 'correction', title: '訂正系統', type: 'system', icon: 'fa-check-square' } 
+                { id: 'correction', title: '訂正系統', type: 'system', icon: 'fa-check-square' },
+                { id: 'nap', title: '午休登記', type: 'system', icon: 'fa-bed' },
+                { id: 'cleaning', title: '掃地檢查', type: 'system', icon: 'fa-broom' }
             ],
             settings: { 
                 reminderText: '', reminderColor: '#000000', reminderFontSize: 24, reminderBlink: false, 
@@ -337,14 +472,9 @@
             data: { 
                 contactBook: {}, 
                 homework: {}, 
-                memos: {}, 
-                customTabs: [], 
-                // 訂正系統的資料結構 (預設值)
-                correction: {
-                    selectedNumbers: Array(6).fill().map(()=>[]),
-                    correctionTitles: Array(6).fill(''),
-                    defaultTitles: ['生字','圈短','短造','國習','數習','數作','數卷','國卷','聯絡簿','刷牙擦桌子','聽考','社習','作文','週記','數八','英單','數課']
-                }
+                correction: { selectedNumbers: Array(6).fill().map(()=>[]), correctionTitles: Array(6).fill(''), defaultTitles: ['生字','圈短','短造','國習','數習','數作','數卷','國卷','聯絡簿','刷牙擦桌子','聽考','社習','作文','週記','數八','英單','數課'] },
+                nap: { studentPositions: {}, exemptStudents: [], nextRegisters: [], message: "安靜午休，好好休息！" },
+                cleaning: { left: [], right: [] }
             },
            
             saveTimeout: null, 
@@ -366,7 +496,6 @@
                 }
  
                 const statusEl = document.getElementById('sync-status');
-                
                 try {
                     const firebaseApp = initializeApp(firebaseConfig);
                     db = getFirestore(firebaseApp);
@@ -392,34 +521,33 @@
                 onSnapshot(docRef, (docSnap) => {
                     if (docSnap.exists()) {
                         const parsed = docSnap.data();
-                        
                         if (parsed.settings) this.settings = { ...this.settings, ...parsed.settings };
                         if (parsed.data) {
                             let loadedData = parsed.data;
-                            // 解壓縮字串化的資料
-                            if (typeof loadedData.correction === 'string') {
-                                try { loadedData.correction = JSON.parse(loadedData.correction); } catch(e) {}
-                            }
+                            ['correction', 'nap', 'cleaning'].forEach(k => {
+                                if (typeof loadedData[k] === 'string') {
+                                    try { loadedData[k] = JSON.parse(loadedData[k]); } catch(e) {}
+                                }
+                            });
                             this.data = { ...this.data, ...loadedData };
                             
-                            if (!this.data.correction) this.data.correction = {};
-                            if (!this.data.correction.selectedNumbers) this.data.correction.selectedNumbers = Array(6).fill().map(()=>[]);
-                            if (!this.data.correction.correctionTitles) this.data.correction.correctionTitles = Array(6).fill('');
-                            if (!this.data.correction.defaultTitles) this.data.correction.defaultTitles = ['生字','圈短','短造','國習','數習','數作','數卷','國卷','聯絡簿','刷牙擦桌子','聽考','社習','作文','週記','數八','英單','數課'];
+                            // 防呆
+                            if (!this.data.correction) this.data.correction = { selectedNumbers: Array(6).fill().map(()=>[]), correctionTitles: Array(6).fill(''), defaultTitles: ['生字','圈短','短造','國習','數習','數作','數卷','國卷','聯絡簿','刷牙擦桌子','聽考','社習','作文','週記','數八','英單','數課'] };
+                            if (!this.data.nap) this.data.nap = { studentPositions: {}, exemptStudents: [], nextRegisters: [], message: "安靜午休，好好休息！" };
+                            if (!this.data.cleaning) this.data.cleaning = { left: [], right: [] };
+                            if (Object.keys(this.data.nap.studentPositions).length === 0) { for(let i=1; i<=29; i++) this.data.nap.studentPositions[i] = 'green'; }
                         }
                         
-                        // 根據當前分頁刷新 UI
-                        if (this.activeTabId === 'home') this.initHomeView();
-                        else if (this.activeTabId === 'homework') this.renderHomeworkGrid();
-                        else if (this.activeTabId === 'correction') this.correction.render();
-                        else this.renderCustomTabView(this.activeTabId);
+                        this.refreshCurrentTab();
                         
                         if(statusEl) {
                             statusEl.className = "text-xs text-green-700 flex items-center mr-2 font-bold bg-green-50 px-2 py-1 rounded-full border border-green-200";
                             statusEl.innerHTML = '<i class="fas fa-check-circle mr-1"></i> 雲端同步完成';
                         }
                     } else {
-                        // 第一次使用，建立空文件
+                        // 初始化
+                        this.data.nap.studentPositions = {};
+                        for(let i=1; i<=29; i++) this.data.nap.studentPositions[i] = 'green';
                         this.saveToCloud();
                     }
                 }, (error) => {
@@ -439,12 +567,10 @@
                 if (this.saveTimeout) clearTimeout(this.saveTimeout);
                 this.saveTimeout = setTimeout(async () => {
                     try {
-                        // 處理 Nested Array 問題
                         const dataToSave = JSON.parse(JSON.stringify(this.data));
-                        if (dataToSave.correction && Array.isArray(dataToSave.correction.selectedNumbers)) {
-                            // 將訂正資料轉為字串
-                            dataToSave.correction = JSON.stringify(dataToSave.correction);
-                        }
+                        ['correction', 'nap', 'cleaning'].forEach(k => {
+                            if (dataToSave[k]) dataToSave[k] = JSON.stringify(dataToSave[k]);
+                        });
 
                         await setDoc(docRef, { settings: this.settings, data: dataToSave }, { merge: true });
                         if (statusEl) {
@@ -453,9 +579,17 @@
                         }
                     } catch (e) {
                         console.error("儲存失敗:", e);
-                        if (statusEl) statusEl.innerHTML = '<span class="text-red-500">儲存失敗: ' + e.message + '</span>';
+                        if (statusEl) statusEl.innerHTML = '<span class="text-red-500">儲存失敗</span>';
                     }
                 }, 800);
+            },
+            
+            refreshCurrentTab: function() {
+                if (this.activeTabId === 'home') this.initHomeView();
+                else if (this.activeTabId === 'homework') this.renderHomeworkGrid();
+                else if (this.activeTabId === 'correction') this.correction.render();
+                else if (this.activeTabId === 'nap') this.nap.render();
+                else if (this.activeTabId === 'cleaning') this.cleaning.render();
             },
  
             renderTabs: function() {
@@ -469,39 +603,8 @@
                     el.innerHTML = `<i class="fas ${tab.icon} mr-2"></i><span>${tab.title}</span>`;
                     container.appendChild(el);
                 });
-                
-                // 渲染自訂分頁 (如果有)
-                if (Array.isArray(this.data.customTabs)) {
-                    this.data.customTabs.forEach(tab => this.createTabElement(container, tab, true));
-                }
             },
            
-            createTabElement: function(container, tab, isCustom) {
-                const el = document.createElement('div');
-                el.className = `tab-btn ${tab.id === this.activeTabId ? 'tab-active' : 'tab-inactive'}`;
-                el.onclick = () => this.switchTab(tab.id);
-                
-                const iconClass = isCustom ? 'fa-globe' : (tab.icon || 'fa-folder-open');
-                el.innerHTML = `<i class="fas ${iconClass} mr-2"></i><span>${tab.title}</span>`;
-                
-                if (isCustom) {
-                    const editBtn = document.createElement('div');
-                    editBtn.className = 'tab-edit-btn';
-                    editBtn.innerHTML = '<i class="fas fa-pen text-xs"></i>';
-                    editBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); app.openEditTabModal(tab.id); });
-                    el.appendChild(editBtn);
-
-                    const delBtn = document.createElement('div');
-                    delBtn.className = 'tab-edit-btn hover:bg-red-500';
-                    delBtn.style.marginLeft = '4px';
-                    delBtn.innerHTML = '<i class="fas fa-times text-xs"></i>';
-                    delBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); app.deleteTab(tab.id); });
-                    el.appendChild(delBtn);
-                }
-                
-                container.appendChild(el);
-            },
- 
             switchTab: function(tabId) {
                 this.activeTabId = tabId;
                 this.renderTabs();
@@ -519,50 +622,27 @@
                 } else if (tabId === 'correction') {
                     main.appendChild(document.getElementById('template-correction').firstElementChild.cloneNode(true));
                     this.correction.init();
-                } else {
-                    const tabData = this.data.customTabs.find(t => t.id === tabId);
-                    if (tabData) this.renderCustomTabView(tabData);
+                } else if (tabId === 'nap') {
+                    main.appendChild(document.getElementById('template-nap').firstElementChild.cloneNode(true));
+                    this.nap.init();
+                } else if (tabId === 'cleaning') {
+                    main.appendChild(document.getElementById('template-cleaning').firstElementChild.cloneNode(true));
+                    this.cleaning.init();
                 }
-            },
-            
-            // 渲染使用者自訂分頁 (Sandboxed)
-            renderCustomTabView: function(tabData) {
-                if (!tabData) return;
-                const main = document.getElementById('main-content');
-                const container = document.createElement('div');
-                container.className = "w-full h-full bg-white flex flex-col";
-                
-                let contentHTML = '';
-                const code = tabData.content;
-                
-                if (code.trim().startsWith('http')) {
-                     contentHTML = `<iframe src="${code}" class="w-full h-full border-none" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>`;
-                } else if (code.includes('<iframe')) {
-                     contentHTML = `<div class="w-full h-full flex items-center justify-center bg-black">${code.replace('<iframe', '<iframe class="w-full h-full"')}</div>`;
-                } else {
-                     contentHTML = `<iframe srcdoc="${code.replace(/"/g, '&quot;')}" class="w-full h-full border-none" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>`;
-                }
-                
-                container.innerHTML = contentHTML;
-                main.appendChild(container);
             },
 
-            // ================= 訂正系統邏輯 (整合版) =================
+            // Correction logic (integrated)
             correction: {
                 init: function() {
                     this.createFrames();
                     this.createTitleChips();
                     this.render();
-                    
                     const customInput = document.getElementById('customTitleInput');
                     if(customInput) {
                         const newElement = customInput.cloneNode(true);
                         customInput.parentNode.replaceChild(newElement, customInput);
-                        newElement.addEventListener('keypress', e => {
-                            if(e.key === 'Enter') app.correction.addCustomTitle();
-                        });
+                        newElement.addEventListener('keypress', e => { if(e.key === 'Enter') app.correction.addCustomTitle(); });
                     }
-                    
                     const timeEl = document.getElementById('centerTimeDisplay');
                     if(timeEl) {
                         const updateCorrectClock = () => {
@@ -574,27 +654,17 @@
                         this.timer = setInterval(updateCorrectClock, 1000);
                     }
                 },
-                
                 createFrames: function() {
                     const grid = document.getElementById('frames-grid');
                     if(!grid) return;
                     grid.innerHTML = '';
-                    
                     for(let i=0; i<6; i++) {
                         const frame = document.createElement('div');
                         frame.id = `frame-${i}`;
                         frame.className = `corr-frame frame-bg-${i}`;
-                        frame.innerHTML = `
-                            <div class="frame-header">
-                                <input type="text" class="frame-title-input" placeholder="訂正項目" data-frame-index="${i}">
-                                <button onclick="app.correction.selectAll(${i})" class="frame-button frame-button-select">全選</button>
-                                <button onclick="app.correction.deselectAll(${i})" class="frame-button frame-button-deselect">取消</button>
-                            </div>
-                            <div class="corr-number-grid" id="grid-${i}"></div>
-                        `;
+                        frame.innerHTML = `<div class="frame-header"><input type="text" class="frame-title-input" placeholder="訂正項目" data-frame-index="${i}"><button onclick="app.correction.selectAll(${i})" class="frame-button frame-button-select">全選</button><button onclick="app.correction.deselectAll(${i})" class="frame-button frame-button-deselect">取消</button></div><div class="corr-number-grid" id="grid-${i}"></div>`;
                         frame.querySelector('.frame-title-input').oninput = e => app.correction.updateTitle(i, e.target.value);
                         grid.appendChild(frame);
-                        
                         const numGrid = frame.querySelector(`#grid-${i}`);
                         for(let n=1; n<=29; n++) {
                             if(n===15) continue;
@@ -607,43 +677,31 @@
                         }
                     }
                 },
-                
                 render: function() {
                     const data = app.data.correction;
                     if(!data) return;
-
-                    document.querySelectorAll('.frame-title-input').forEach((input, i) => {
-                        input.value = data.correctionTitles[i] || '';
-                    });
-                    
+                    document.querySelectorAll('.frame-title-input').forEach((input, i) => { input.value = data.correctionTitles[i] || ''; });
                     for(let f=0; f<6; f++) {
                         const frame = document.getElementById(`grid-${f}`);
                         if(frame) {
                             frame.querySelectorAll('.corr-number-item').forEach(item => {
                                 const n = parseInt(item.dataset.number);
-                                if (data.selectedNumbers[f] && data.selectedNumbers[f].includes(n)) {
-                                    item.classList.add('selected');
-                                } else {
-                                    item.classList.remove('selected');
-                                }
+                                if (data.selectedNumbers[f] && data.selectedNumbers[f].includes(n)) { item.classList.add('selected'); } else { item.classList.remove('selected'); }
                             });
                         }
                     }
                     this.createTitleChips();
                 },
-                
                 createTitleChips: function() {
                     const container = document.getElementById('titleChipsContainer');
                     if(!container) return;
                     container.innerHTML = '';
-                    
                     const titles = app.data.correction.defaultTitles || [];
                     titles.forEach((title, index) => {
                         const chip = document.createElement('div');
                         chip.className = 'title-chip';
                         chip.textContent = title;
                         chip.draggable = true;
-                        
                         chip.onclick = () => {
                             const input = document.querySelector('.frame-title-input:focus');
                             if(input) {
@@ -652,10 +710,9 @@
                                 app.correction.updateTitle(f, title);
                             }
                         };
-                        
                         chip.oncontextmenu = (e) => {
                             e.preventDefault();
-                            if(index >= 17) { // 預設標題不可刪
+                            if(index >= 17) {
                                 if(confirm(`確定要刪除標題「${title}」嗎？`)) {
                                     app.data.correction.defaultTitles.splice(index, 1);
                                     app.saveToCloud();
@@ -663,41 +720,32 @@
                                 }
                             }
                         };
-                        
                         chip.ondragstart = (e) => e.dataTransfer.setData('text/plain', title);
                         container.appendChild(chip);
                     });
                 },
-                
                 toggleNumber: function(frameIdx, num) {
                     const list = app.data.correction.selectedNumbers[frameIdx];
                     const idx = list.indexOf(num);
-                    if(idx > -1) list.splice(idx, 1);
-                    else list.push(num);
+                    if(idx > -1) list.splice(idx, 1); else list.push(num);
                     app.saveToCloud();
                     this.render();
                 },
-                
                 selectAll: function(frameIdx) {
                     app.data.correction.selectedNumbers[frameIdx] = [];
-                    for(let i=1; i<=29; i++) {
-                        if(i!==15) app.data.correction.selectedNumbers[frameIdx].push(i);
-                    }
+                    for(let i=1; i<=29; i++) { if(i!==15) app.data.correction.selectedNumbers[frameIdx].push(i); }
                     app.saveToCloud();
                     this.render();
                 },
-                
                 deselectAll: function(frameIdx) {
                     app.data.correction.selectedNumbers[frameIdx] = [];
                     app.saveToCloud();
                     this.render();
                 },
-                
                 updateTitle: function(frameIdx, val) {
                     app.data.correction.correctionTitles[frameIdx] = val;
                     app.saveToCloud();
                 },
-                
                 addCustomTitle: function() {
                     const input = document.getElementById('customTitleInput');
                     const val = input.value.trim();
@@ -709,19 +757,228 @@
                         }
                         input.value = '';
                     }
+                }
+            },
+
+            // Nap logic
+            nap: {
+                init: function() {
+                    this.render();
+                    const input = document.getElementById('teacherMessage');
+                    if(input) input.value = app.data.nap.message || "安靜午休，好好休息！";
+                    const exemptInput = document.getElementById('exemptInput');
+                    if(exemptInput) {
+                        const newExempt = exemptInput.cloneNode(true);
+                        exemptInput.parentNode.replaceChild(newExempt, exemptInput);
+                        newExempt.addEventListener('keypress', e => { if(e.key === 'Enter') this.addExempt(); });
+                    }
+                    const nextInput = document.getElementById('nextInput');
+                    if(nextInput) {
+                        const newNext = nextInput.cloneNode(true);
+                        nextInput.parentNode.replaceChild(newNext, nextInput);
+                        newNext.addEventListener('keypress', e => { if(e.key === 'Enter') this.addNext(); });
+                    }
+                    const timeEl = document.getElementById('nap-clock');
+                    if(timeEl) {
+                        const updateNapClock = () => { const d = new Date(); timeEl.textContent = d.toLocaleTimeString('zh-TW', {hour12: false}); };
+                        updateNapClock();
+                        if(this.timer) clearInterval(this.timer);
+                        this.timer = setInterval(updateNapClock, 1000);
+                    }
                 },
-                
-                showNotification: function(m) {
-                    const n = document.getElementById('notification');
-                    if(n) {
-                        n.textContent = m;
-                        n.style.display = 'block';
-                        setTimeout(() => n.style.display = 'none', 3000);
+                render: function() {
+                    const data = app.data.nap;
+                    const containers = { green: document.getElementById('greenBalls'), yellow1: document.getElementById('yellow1Balls'), yellow2: document.getElementById('yellow2Balls'), yellow3: document.getElementById('yellow3Balls'), red: document.getElementById('redBalls') };
+                    Object.values(containers).forEach(c => { if(c) c.innerHTML = ''; });
+                    const exemptBalls = document.getElementById('exemptBalls');
+                    const nextBalls = document.getElementById('nextBalls');
+                    if(exemptBalls) exemptBalls.innerHTML = '';
+                    if(nextBalls) nextBalls.innerHTML = '';
+                    for(let num=1; num<=29; num++) {
+                        const zone = data.studentPositions[num] || 'green';
+                        if(containers[zone]) containers[zone].appendChild(this.createBall(num, false, false));
+                    }
+                    data.exemptStudents.forEach(num => { if(exemptBalls) exemptBalls.appendChild(this.createBall(num, false, true)); });
+                    data.nextRegisters.forEach(num => { if(nextBalls) nextBalls.appendChild(this.createBall(num, true, false)); });
+                },
+                createBall: function(num, isRemovable, isExempt) {
+                    const ball = document.createElement('div');
+                    ball.className = 'student-ball' + (isRemovable||isExempt?' removable-ball':'') + (isExempt?' exempt-style':'');
+                    ball.textContent = num;
+                    ball.dataset.student = num;
+                    if(isRemovable) ball.onclick = () => this.removeNext(num);
+                    else if(isExempt) ball.onclick = () => this.removeExempt(num);
+                    else {
+                        ball.draggable = true;
+                        ball.ondragstart = (e) => { e.dataTransfer.setData('text/plain', num); e.target.classList.add('dragging'); };
+                        ball.ondragend = (e) => { e.target.classList.remove('dragging'); document.querySelectorAll('.zone, .yellow-sub').forEach(z => z.classList.remove('drag-over')); };
+                    }
+                    return ball;
+                },
+                handleDragOver: function(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); },
+                handleDrop: function(e, zoneId) { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); const studentNum = parseInt(e.dataTransfer.getData('text/plain')); if(studentNum) { app.data.nap.studentPositions[studentNum] = zoneId; app.saveToCloud(); this.render(); } },
+                updateMessage: function(val) { app.data.nap.message = val; app.saveToCloud(); },
+                addExempt: function() { const input = document.getElementById('exemptInput'); const num = parseInt(input.value); if(num >= 1 && num <= 29) { if(!app.data.nap.exemptStudents.includes(num)) { app.data.nap.exemptStudents.push(num); app.saveToCloud(); this.render(); } input.value = ''; } },
+                removeExempt: function(num) { const idx = app.data.nap.exemptStudents.indexOf(num); if(idx > -1) { app.data.nap.exemptStudents.splice(idx, 1); app.saveToCloud(); this.render(); } },
+                addNext: function() { const input = document.getElementById('nextInput'); const num = parseInt(input.value); if(num >= 1 && num <= 29) { if(!app.data.nap.nextRegisters.includes(num)) { app.data.nap.nextRegisters.push(num); app.saveToCloud(); this.render(); } input.value = ''; } },
+                removeNext: function(num) { const idx = app.data.nap.nextRegisters.indexOf(num); if(idx > -1) { app.data.nap.nextRegisters.splice(idx, 1); app.saveToCloud(); this.render(); } },
+                resetAll: function() { if(confirm('確定要重置所有狀態嗎？')) { app.data.nap.studentPositions = {}; for(let i=1; i<=29; i++) app.data.nap.studentPositions[i] = 'green'; app.data.nap.message = "安靜午休，好好休息！"; app.saveToCloud(); this.render(); document.getElementById('teacherMessage').value = app.data.nap.message; } }
+            },
+
+            // Cleaning Check logic
+            cleaning: {
+                init: function() { this.render(); },
+                render: function() {
+                    const leftList = document.getElementById('leftStudentList');
+                    const rightList = document.getElementById('rightStudentList');
+                    if(!leftList || !rightList) return;
+                    this.renderList('left', app.data.cleaning.left || []);
+                    this.renderList('right', app.data.cleaning.right || []);
+                    this.updateStatus();
+                },
+                renderList: function(side, list) {
+                    const container = document.getElementById(side + 'StudentList');
+                    if(list.length === 0) { container.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-gray-400 text-lg">尚無資料，請新增或匯入</td></tr>'; return; }
+                    container.innerHTML = '';
+                    list.forEach((item, index) => {
+                        const tr = document.createElement('tr');
+                        const l = item.completion_status === 'completed' ? 'completed' : '';
+                        const r = item.inspection_status === 'passed' ? 'passed' : (item.inspection_status === 'failed' ? 'failed' : '');
+                        tr.className = (item.inspection_status === 'failed' && item.recleaned_passed_status !== 'passed') ? 'border-b bg-red-50' : 'border-b hover:bg-gray-50';
+                        tr.innerHTML = `
+                            <td class="py-2 px-2"><input type="text" value="${item.seat}" oninput="app.cleaning.updateItem('${side}', ${index}, 'seat', this.value)" class="w-full px-2 py-1 border rounded text-xs font-bold"></td>
+                            <td class="py-2 px-2"><input type="text" value="${item.task}" oninput="app.cleaning.updateItem('${side}', ${index}, 'task', this.value)" class="w-full px-2 py-1 border rounded text-xs truncate"></td>
+                            <td class="py-2 px-2 text-center"><div onclick="app.cleaning.toggleStatus('${side}', ${index}, 'completion')" class="status-box ${l}">掃</div></td>
+                            <td class="py-2 px-2 text-center"><div class="flex justify-center gap-1">
+                                <div onclick="app.cleaning.toggleStatus('${side}', ${index}, 'inspection')" class="status-box ${r}">${item.inspection_status==='passed'?'通過':(item.inspection_status==='failed'?'未通過':'待檢')}</div>
+                                ${item.inspection_status==='failed' ? `<div onclick="app.cleaning.toggleStatus('${side}', ${index}, 'recleaned')" class="status-box ${item.recleaned_status==='recleaned'?'recleaned':''}">已再打掃</div>` : ''}
+                            </div></td>
+                            <td class="py-2 px-2 text-center">${item.inspection_status==='failed' ? `<div onclick="app.cleaning.toggleStatus('${side}', ${index}, 'recleaned_passed')" class="status-box ${item.recleaned_passed_status==='passed'?'recleaned-passed':''}">通過</div>` : ''}</td>
+                        `;
+                        container.appendChild(tr);
+                    });
+                },
+                add: function(side) {
+                    const newItem = { seat: '', task: '', completion_status: 'pending', inspection_status: 'pending', recleaned_status: 'pending', recleaned_passed_status: 'pending' };
+                    if(!app.data.cleaning[side]) app.data.cleaning[side] = [];
+                    app.data.cleaning[side].push(newItem);
+                    app.saveToCloud();
+                    this.render();
+                },
+                clear: function(side) { if(confirm('確定清除此區域所有資料？')) { app.data.cleaning[side] = []; app.saveToCloud(); this.render(); } },
+                updateItem: function(side, index, field, value) {
+                    app.data.cleaning[side][index][field] = value;
+                    if(app.cleaningSaveTimeout) clearTimeout(app.cleaningSaveTimeout);
+                    app.cleaningSaveTimeout = setTimeout(() => app.saveToCloud(), 1000);
+                },
+                toggleStatus: function(side, index, type) {
+                    const item = app.data.cleaning[side][index];
+                    if(type === 'completion') { item.completion_status = item.completion_status === 'pending' ? 'completed' : 'pending'; }
+                    else if(type === 'inspection') {
+                        const states = ['pending', 'passed', 'failed'];
+                        const next = states[(states.indexOf(item.inspection_status) + 1) % 3];
+                        item.inspection_status = next;
+                        if(next === 'passed') { item.recleaned_status = 'pending'; item.recleaned_passed_status = 'pending'; }
+                    } else if(type === 'recleaned') { if(item.inspection_status === 'failed') item.recleaned_status = item.recleaned_status === 'pending' ? 'recleaned' : 'pending'; }
+                    else if(type === 'recleaned_passed') { if(item.inspection_status === 'failed') item.recleaned_passed_status = item.recleaned_passed_status === 'pending' ? 'passed' : 'pending'; }
+                    app.saveToCloud();
+                    this.render();
+                },
+                updateStatus: function() {
+                    const display = document.getElementById('cleanStatusDisplay');
+                    if(!display) return;
+                    const allItems = [...(app.data.cleaning.left||[]), ...(app.data.cleaning.right||[])];
+                    if(allItems.length === 0) { display.className = "flex-1 text-center py-3 rounded-lg font-bold text-lg bg-gray-100 text-gray-700"; display.innerHTML = "進行中..."; return; }
+                    const failed = allItems.filter(i => i.inspection_status === 'failed' && i.recleaned_passed_status !== 'passed').map(i => i.seat).filter(s => s);
+                    const allPassed = allItems.every(i => i.inspection_status === 'passed' || (i.inspection_status === 'failed' && i.recleaned_passed_status === 'passed'));
+                    if(allPassed) { display.className = "flex-1 text-center py-3 rounded-lg font-bold text-lg bg-green-300 text-green-800"; display.innerHTML = "✓ 全部完成"; }
+                    else if(failed.length > 0) { display.className = "flex-1 text-center py-3 rounded-lg font-bold text-lg bg-red-200 text-red-800"; display.innerHTML = `⚠️ 未通過: ${failed.join(', ')}`; }
+                    else { display.className = "flex-1 text-center py-3 rounded-lg font-bold text-lg bg-gray-100 text-gray-700"; display.innerHTML = "進行中..."; }
+                },
+                resetAll: function() {
+                    if(confirm('確定重置所有檢查狀態？')) {
+                        ['left', 'right'].forEach(side => {
+                            if(app.data.cleaning[side]) {
+                                app.data.cleaning[side].forEach(item => {
+                                    item.completion_status = 'pending'; item.inspection_status = 'pending'; item.recleaned_status = 'pending'; item.recleaned_passed_status = 'pending';
+                                });
+                            }
+                        });
+                        app.saveToCloud();
+                        this.render();
+                    }
+                },
+                showImport: function(side) {
+                    // Create modal dynamically
+                    const modal = document.createElement('div');
+                    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+                    modal.innerHTML = `
+                        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
+                            <div class="p-6 border-b bg-gradient-to-r from-purple-50 to-purple-100">
+                                <h3 class="text-2xl font-bold text-purple-800">📥 匯入資料 (${side === 'left' ? '教室區域' : '公共區域'})</h3>
+                            </div>
+                            <div class="p-6">
+                                <textarea id="importText" class="w-full h-64 px-4 py-3 border-2 border-gray-300 rounded-lg font-mono text-sm" placeholder="格式：座號,工作項目\n例如：\n1,擦黑板\n2,排桌椅"></textarea>
+                                <label class="flex items-center mt-4 cursor-pointer">
+                                    <input type="checkbox" id="importReplace" class="mr-3 w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                                    <span class="text-sm font-semibold text-gray-700">⚠️ 取代目前所有資料</span>
+                                </label>
+                            </div>
+                            <div class="p-6 border-t bg-gray-50 flex gap-3">
+                                <button id="confirmImportBtn" class="flex-1 bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 rounded-lg transition shadow-md">✓ 確定匯入</button>
+                                <button id="cancelImportBtn" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 rounded-lg transition shadow-md">✕ 取消</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+
+                    // Bind events
+                    document.getElementById('confirmImportBtn').onclick = () => {
+                        const text = document.getElementById('importText').value;
+                        const replace = document.getElementById('importReplace').checked;
+                        this.processImport(side, text, replace);
+                        document.body.removeChild(modal);
+                    };
+                    document.getElementById('cancelImportBtn').onclick = () => {
+                        document.body.removeChild(modal);
+                    };
+                },
+                processImport: function(side, text, replace) {
+                    const lines = text.trim().split('\n');
+                    const newItems = lines.map(line => {
+                        const parts = line.split(/[,，]/); // Support both comma types
+                        if(parts.length >= 2) {
+                            return { 
+                                seat: parts[0].trim(), 
+                                task: parts.slice(1).join(',').trim(), 
+                                completion_status: 'pending', 
+                                inspection_status: 'pending', 
+                                recleaned_status: 'pending', 
+                                recleaned_passed_status: 'pending' 
+                            };
+                        }
+                        return null;
+                    }).filter(i => i);
+
+                    if(newItems.length > 0) {
+                        if(!app.data.cleaning[side]) app.data.cleaning[side] = [];
+                        
+                        if(replace) {
+                            app.data.cleaning[side] = newItems;
+                        } else {
+                            app.data.cleaning[side].push(...newItems);
+                        }
+                        
+                        app.saveToCloud();
+                        this.render();
+                        alert(`成功匯入 ${newItems.length} 筆資料`);
+                    } else {
+                        alert('沒有讀取到有效資料，請檢查格式');
                     }
                 }
             },
 
-            // ================= 首頁邏輯 =================
+            // ================= 首頁邏輯 (保持不變) =================
 
             initHomeView: function() {
                 const sets = this.settings;
@@ -1090,79 +1347,6 @@
             closeHomeworkModal: function() {
                 document.getElementById('homework-modal').classList.add('hidden');
                 this.renderHomeworkGrid();
-            },
-
-            // ================= 自訂分頁邏輯 (保留以防未來需要) =================
-            
-            openAddTabModal: function() {
-                this.editingTabId = null;
-                document.getElementById('modal-title').innerHTML = '<i class="fas fa-plus-circle mr-2 text-blue-500"></i> 新增自訂分頁';
-                document.getElementById('modal-submit-btn').innerHTML = '<i class="fas fa-save mr-1"></i> 新增分頁';
-                document.getElementById('new-tab-title').value = '';
-                document.getElementById('new-tab-code').value = '';
-                document.getElementById('add-tab-modal').classList.remove('hidden');
-            },
-
-            openEditTabModal: function(tabId) {
-                this.editingTabId = tabId;
-                const tabData = this.data.customTabs.find(t => t.id === tabId);
-                if (!tabData) return;
-                document.getElementById('modal-title').innerHTML = '<i class="fas fa-pen mr-2 text-blue-500"></i> 修改分頁內容';
-                document.getElementById('modal-submit-btn').innerHTML = '<i class="fas fa-check mr-1"></i> 儲存修改';
-                document.getElementById('new-tab-title').value = tabData.title;
-                document.getElementById('new-tab-code').value = tabData.content || '';
-                document.getElementById('add-tab-modal').classList.remove('hidden');
-            },
-            
-            deleteTab: function(tabId) {
-                if(confirm('確定要刪除這個分頁嗎？')) {
-                    this.data.customTabs = this.data.customTabs.filter(t => t.id !== tabId);
-                    this.saveToCloud();
-                    if(this.activeTabId === tabId) this.switchTab('home');
-                    else this.renderTabs();
-                }
-            },
-
-            closeAddTabModal: function() {
-                document.getElementById('add-tab-modal').classList.add('hidden');
-            },
-
-            confirmAddOrEditTab: function() {
-                const title = document.getElementById('new-tab-title').value.trim();
-                let input = document.getElementById('new-tab-code').value.trim();
- 
-                if (!title || !input) {
-                    alert('請輸入名稱與網址(或代碼)！'); return;
-                }
- 
-                input = input.replace(/youtube\.com\/watch\?v=([^&"\s]+)/g, 'youtube.com/embed/$1');
-                input = input.replace(/youtu\.be\/([^?"\s]+)/g, 'youtube.com/embed/$1');
- 
-                if (!this.data.customTabs) this.data.customTabs = [];
-                
-                let targetTabId;
-                if (this.editingTabId) {
-                    const tabIndex = this.data.customTabs.findIndex(t => t.id === this.editingTabId);
-                    if (tabIndex > -1) {
-                        this.data.customTabs[tabIndex].title = title;
-                        this.data.customTabs[tabIndex].content = input;
-                        targetTabId = this.editingTabId;
-                    }
-                } else {
-                    const newId = 'tab-' + Date.now();
-                    this.data.customTabs.push({
-                        id: newId,
-                        title: title,
-                        content: input,
-                        type: 'custom'
-                    });
-                    targetTabId = newId;
-                }
-                
-                this.saveToCloud();
-                this.renderTabs();
-                this.closeAddTabModal();
-                this.switchTab(targetTabId);
             }
         };
         
@@ -1173,3 +1357,4 @@
     </script>
 </body>
 </html>
+
