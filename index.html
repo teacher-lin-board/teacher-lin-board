@@ -8,11 +8,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Noto+Serif+TC:wght@600&family=Mali:wght@400;700&display=swap" rel="stylesheet">
-    <!-- 引入微軟正黑體，配合訂正系統樣式 -->
     <style>
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f3f4f6; overflow: hidden; }
+        body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; background-color: #f3f4f6; overflow: hidden; }
         
-        /* 黑板風格 */
+        /* === 黑板與聯絡簿樣式 === */
         .blackboard {
             background-color: #2b3a28;
             background-image: radial-gradient(#4a5d46 1px, transparent 1px), radial-gradient(#4a5d46 1px, transparent 1px);
@@ -27,28 +26,18 @@
             color: white; font-family: 'Noto Serif TC', serif; width: 100%; padding: 4px; transition: font-size 0.2s, height 0.2s;
         }
         .chalk-input:focus { outline: none; border-bottom: 1px solid white; background: rgba(255,255,255,0.1); }
-        
-        /* 待辦事項刪除按鈕 */
-        .cb-delete-btn { opacity: 0; transition: opacity 0.2s; cursor: pointer; color: #ef4444; margin-left: 8px; padding: 4px; }
-        .group:hover .cb-delete-btn { opacity: 0.6; }
-        .cb-delete-btn:hover { opacity: 1 !important; }
-        
-        /* 便利貼與卡片 */
         .sticky-note { background-color: #fef08a; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); border-radius: 4px; border-top: 10px solid rgba(255,255,0,0.3); }
         .duty-card { background-color: #e0f2fe; border-left: 4px solid #3b82f6; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); border-radius: 4px; }
-       
-        /* 動畫 */
         @keyframes blinker { 50% { opacity: 0.3; color: red; } }
         .blink-active { animation: blinker 1.5s linear infinite; font-weight: bold; }
         
-        /* 滾動條 */
+        /* === 通用介面樣式 === */
         .content-area { height: calc(100vh - 60px); overflow-y: hidden; }
         .scrollable-content { height: 100%; overflow-y: auto; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-       
-        /* 分頁按鈕樣式 */
+        
         .tab-btn {
             white-space: nowrap; padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 500;
             border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center;
@@ -56,40 +45,24 @@
         .tab-active { background-color: #f3f4f6; color: #1e40af; border-bottom: 3px solid #1e40af; }
         .tab-inactive { background-color: white; color: #64748b; border-bottom: 3px solid transparent; }
         .tab-inactive:hover { background-color: #f1f5f9; }
-       
-        /* 編輯按鈕樣式 */
-        .tab-edit-btn {
-            width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            margin-left: 8px; color: #94a3b8; transition: all 0.2s; cursor: pointer; background: rgba(0,0,0,0.05);
-        }
-        .tab-edit-btn:hover { background-color: #3b82f6; color: white; transform: scale(1.1); }
-       
-        .add-tab-btn { background-color: rgba(255,255,255,0.8); color: #1e40af; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-left: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: all 0.2s; flex-shrink: 0; }
-        .add-tab-btn:hover { background-color: #1e40af; color: white; transform: scale(1.1); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-       
-        /* 作業管理樣式 */
+
+        /* === 作業管理樣式 === */
         .workbook-bg { background-color: #ffffff; background-image: linear-gradient(rgba(200, 220, 200, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(200, 220, 200, 0.4) 1px, transparent 1px); background-size: 20px 20px; position: relative; }
         .student-grid-cell { min-height: 90px; display: flex; flex-direction: column; border-radius: 10px; transition: all 0.2s; position: relative; cursor: pointer; overflow: hidden; background-color: #22c55e; border: 2px solid #ffffff; box-shadow: 0 3px 5px rgba(0,0,0,0.12); }
         .student-grid-cell:hover { transform: translateY(-2px); background-color: #16a34a; box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
         .student-grid-cell.incomplete { background-color: #fff1f2; border-color: #fecdd3; }
         .student-grid-cell.incomplete:hover { background-color: #ffe4e6; }
-        
         .cell-tape { position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(-2deg); width: 30px; height: 15px; background-color: rgba(255,255,255,0.4); z-index: 0; }
         .cute-font { font-family: 'Mali', 'Noto Sans TC', cursive; }
- 
-        /* Modal 動畫 */
-        .animate-fade-in { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
-        /* ======== 訂正系統樣式移植 ======== */
+        /* === 訂正系統樣式 (來自您的 txt) === */
         .correction-wrapper { font-family: 'Microsoft JhengHei', sans-serif; padding: 1.5rem; }
-        .number-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 8px; }
-        .number-item { display: flex; align-items: center; justify-content: center; height: 40px; background-color: #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s; user-select: none; font-weight: bold; color: #64748b; }
-        .number-item:hover { background-color: #cbd5e1; }
-        .number-item.selected { background-color: #3b82f6; color: white; }
+        .corr-number-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+        .corr-number-item { display: flex; align-items: center; justify-content: center; height: 40px; background-color: #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.2s; user-select: none; font-weight: bold; color: #64748b; }
+        .corr-number-item:hover { background-color: #cbd5e1; }
+        .corr-number-item.selected { background-color: #3b82f6; color: white; }
         
-        .frame { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 16px; margin-bottom: 20px; }
-        /* 6 個區塊的背景色 */
+        .corr-frame { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 16px; margin-bottom: 20px; }
         .frame-bg-0 { background-color: #ffedd5; }
         .frame-bg-1 { background-color: #dcfce7; }
         .frame-bg-2 { background-color: #dbeafe; }
@@ -106,14 +79,11 @@
         .frame-title-input { width: 160px; font-size: 24px; font-weight: bold; padding: 4px 8px; border: 2px solid rgba(0,0,0,0.1); border-radius: 6px; background-color: rgba(255,255,255,0.9); }
         .frame-button { padding: 6px 10px; font-size: 12px; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
         .frame-button-select { background-color: #3b82f6; color: white; }
-        .frame-button-select:hover { background-color: #2563eb; }
         .frame-button-deselect { background-color: #6b7280; color: white; }
-        .frame-button-deselect:hover { background-color: #4b5563; }
         
         .add-title-inline { display: flex; align-items: center; gap: 8px; }
         .add-title-input { font-size: 16px; padding: 6px 12px; border: 2px solid #fbbf24; border-radius: 6px; width: 140px; }
         .add-title-btn { font-size: 14px; padding: 6px 12px; background-color: #f59e0b; color: white; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
-        .add-title-btn:hover { background-color: #d97706; }
 
         .frames-container { position: relative; }
         .center-time-wrapper { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; pointer-events: none; }
@@ -130,14 +100,10 @@
 </head>
 <body class="h-screen flex flex-col">
  
-    <!-- 頂部導覽列與分頁 -->
+    <!-- 頂部導覽列 -->
     <header class="h-[60px] bg-white border-b shadow-sm flex items-center px-4 justify-between shrink-0 z-10">
         <div class="flex items-center h-full pt-2 max-w-[70%]">
             <div class="flex items-center space-x-1 overflow-x-auto no-scrollbar h-full" id="tabs-container"></div>
-            <!-- 動態新增分頁按鈕 -->
-            <button onclick="app.openAddTabModal()" class="add-tab-btn" title="新增分頁">
-                 <i class="fas fa-plus"></i>
-            </button>
         </div>
         <div class="flex items-center gap-2">
             <div id="sync-status" class="text-xs text-gray-500 flex items-center mr-2 font-bold bg-gray-100 px-2 py-1 rounded-full">
@@ -149,12 +115,10 @@
     <!-- 主要內容區 -->
     <main class="flex-grow relative bg-gray-100 flex flex-col overflow-hidden" id="main-content"></main>
  
-    <!-- ============================================== -->
-    <!-- 隱藏的模板區域 -->
-    <!-- ============================================== -->
+    <!-- ================= 模板區域 ================= -->
     <div style="display:none;">
        
-        <!-- 首頁黑板模板 -->
+        <!-- 1. 首頁黑板模板 -->
         <div id="template-home">
              <div class="grid grid-cols-12 gap-4 h-full p-4 content-area">
                  <div class="col-span-12 md:col-span-3 flex flex-col gap-4 h-full">
@@ -240,7 +204,7 @@
              </div>
         </div>
  
-        <!-- 作業管理模板 -->
+        <!-- 2. 作業管理模板 -->
         <div id="template-homework" class="w-full h-full workbook-bg">
             <div class="flex flex-col h-full ml-0">
                  <div class="p-2 md:p-3 flex flex-wrap items-center justify-between gap-2 shrink-0 no-print bg-white/80 backdrop-blur border-b border-green-100 m-2 rounded-xl shadow-sm">
@@ -270,7 +234,7 @@
             </div>
         </div>
 
-        <!-- 訂正系統模板 (整合版，直接與 App 邏輯串接，不使用 iframe) -->
+        <!-- 3. 訂正系統模板 (整合版) -->
         <div id="template-correction" class="w-full h-full overflow-y-auto">
              <div class="correction-wrapper max-w-7xl mx-auto">
                 <div class="title-selector mb-8">
@@ -286,32 +250,6 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="frames-grid"></div>
                 </div>
-            </div>
-        </div>
-    </div>
- 
-    <!-- 新增/修改滿版分頁 Modal -->
-    <div id="add-tab-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 flex flex-col max-h-[90vh]">
-            <h3 id="modal-title" class="text-2xl font-bold text-blue-900 mb-2 border-b-2 border-blue-100 pb-2 flex items-center">
-                 <i class="fas fa-code mr-2 text-blue-500"></i> 新增自訂分頁
-            </h3>
-            <p class="text-sm text-blue-700 mb-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
-                 <i class="fas fa-shield-alt text-green-600 mr-1"></i> <strong>已啟用沙盒隔離技術</strong><br>
-                 您可以貼上 AI 生成的完整 HTML 代碼、任何網址，系統會自動建立獨立環境運行。
-            </p>
-           
-            <div class="mb-4">
-                 <label class="block text-gray-700 font-bold mb-2">1. 分頁名稱</label>
-                 <input type="text" id="new-tab-title" class="w-full border-2 border-gray-200 focus:border-blue-400 p-2 rounded outline-none transition" placeholder="例如：訂正小工具">
-            </div>
-            <div class="mb-6 flex-grow flex flex-col">
-                <label class="block text-gray-700 font-bold mb-2">2. 貼上 HTML 原始碼 或 直接貼網址</label>
-                 <textarea id="new-tab-code" class="w-full border-2 border-gray-200 focus:border-blue-400 p-2 rounded outline-none transition flex-grow resize-none font-mono text-sm h-32" placeholder='請貼上完整 HTML 原始碼、網址或 <iframe ...> 語法'></textarea>
-            </div>
-            <div class="flex justify-end gap-3 mt-auto pt-4 border-t border-gray-100">
-                 <button onclick="app.closeAddTabModal()" class="px-5 py-2 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 transition">取消</button>
-                 <button id="modal-submit-btn" onclick="app.confirmAddOrEditTab()" class="px-5 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-md transition"><i class="fas fa-save mr-1"></i> 儲存分頁</button>
             </div>
         </div>
     </div>
@@ -340,7 +278,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
  
-        // 您的 Firebase 金鑰
+        // 您的 Firebase 金鑰 (從您之前提供的文件取得)
         const firebaseConfig = {
             apiKey: "AIzaSyAT9VXm8gf5Pn4A1iu3xXF6X8Ve9NYlUAk", 
             authDomain: "teacherboard-9224d.firebaseapp.com",
@@ -351,13 +289,12 @@
         };
  
         let db, docRef;
-        let isOffline = false;
  
         window.app = {
             tabs: [ 
                 { id: 'home', title: '聯絡簿', type: 'system', icon: 'fa-home' }, 
                 { id: 'homework', title: '作業管理', type: 'system', icon: 'fa-book' },
-                { id: 'correction', title: '訂正系統', type: 'system', icon: 'fa-check-square' } // 改為 system 類型，直接渲染
+                { id: 'correction', title: '訂正系統', type: 'system', icon: 'fa-check-square' } 
             ],
             settings: { 
                 reminderText: '', reminderColor: '#000000', reminderFontSize: 24, reminderBlink: false, 
@@ -367,9 +304,7 @@
             data: { 
                 contactBook: {}, 
                 homework: {}, 
-                memos: {}, 
-                customTabs: [], 
-                // 訂正系統的資料結構
+                // 訂正系統的資料結構 (預設值)
                 correction: {
                     selectedNumbers: Array(6).fill().map(()=>[]),
                     correctionTitles: Array(6).fill(''),
@@ -383,7 +318,6 @@
             currentDayIndex: 0, 
             currentHomeworkDate: new Date().toISOString().split('T')[0], 
             currentEditingStudent: null,
-            editingTabId: null,
            
             init: function() {
                 this.currentWeekBase = this.getMonday(new Date());
@@ -404,10 +338,8 @@
                     docRef = doc(db, "Classrooms", "TeacherBoard_Data");
                     this.setupRealtimeListener();
                 } catch (e) {
-                    console.warn("Firebase 連線失敗，切換至本地模式:", e);
-                    isOffline = true;
-                    this.loadFromLocal();
-                    if(statusEl) statusEl.innerHTML = '<span class="text-gray-500 bg-gray-200 px-3 py-1 rounded-full"><i class="fas fa-hdd"></i> 本地模式</span>';
+                    console.error("Firebase Init Error:", e);
+                    if(statusEl) statusEl.innerHTML = '<span class="text-red-500">連線設定錯誤</span>';
                 }
             },
  
@@ -418,78 +350,41 @@
                 onSnapshot(docRef, (docSnap) => {
                     if (docSnap.exists()) {
                         const parsed = docSnap.data();
+                        
+                        // 載入設定與資料
                         if (parsed.settings) this.settings = { ...this.settings, ...parsed.settings };
                         if (parsed.data) {
                             this.data = { ...this.data, ...parsed.data };
-                            // 防呆
-                            if (!this.data.correction) {
-                                this.data.correction = {
-                                    selectedNumbers: Array(6).fill().map(()=>[]),
-                                    correctionTitles: Array(6).fill(''),
-                                    defaultTitles: ['生字','圈短','短造','國習','數習','數作','數卷','國卷','聯絡簿','刷牙擦桌子','聽考','社習','作文','週記','數八','英單','數課']
-                                };
-                            }
-                            if (!this.data.customTabs) this.data.customTabs = [];
+                            
+                            // 確保訂正資料結構完整 (防呆)
+                            if (!this.data.correction) this.data.correction = {};
+                            if (!this.data.correction.selectedNumbers) this.data.correction.selectedNumbers = Array(6).fill().map(()=>[]);
+                            if (!this.data.correction.correctionTitles) this.data.correction.correctionTitles = Array(6).fill('');
+                            if (!this.data.correction.defaultTitles) this.data.correction.defaultTitles = ['生字','圈短','短造','國習','數習','數作','數卷','國卷','聯絡簿','刷牙擦桌子','聽考','社習','作文','週記','數八','英單','數課'];
                         }
-                        
-                        this.renderTabs();
                         
                         // 根據當前分頁刷新 UI
                         if (this.activeTabId === 'home') this.initHomeView();
                         else if (this.activeTabId === 'homework') this.renderHomeworkGrid();
                         else if (this.activeTabId === 'correction') this.correction.render();
-                        else this.renderCustomTabView(this.activeTabId);
                         
                         if(statusEl) {
                             statusEl.className = "text-xs text-green-700 flex items-center mr-2 font-bold bg-green-50 px-2 py-1 rounded-full border border-green-200";
                             statusEl.innerHTML = '<i class="fas fa-check-circle mr-1"></i> 雲端同步完成';
                         }
                     } else {
+                        // 第一次使用，建立空文件
                         this.saveToCloud();
                     }
                 }, (error) => {
                     console.error("監聽失敗:", error);
-                    isOffline = true;
-                    this.loadFromLocal();
+                    if(statusEl) statusEl.innerHTML = '<span class="text-red-500">連線中斷</span>';
                 });
-            },
-            
-            loadFromLocal: function() {
-                try {
-                    const localData = localStorage.getItem('teacherBoardData');
-                    if (localData) {
-                        const parsed = JSON.parse(localData);
-                        this.settings = parsed.settings || this.settings;
-                        this.data = parsed.data || this.data;
-                        if (!Array.isArray(this.data.customTabs)) this.data.customTabs = [];
-                        
-                        this.renderTabs();
-                        if (this.activeTabId === 'home') this.initHomeView();
-                        else if (this.activeTabId === 'homework') this.renderHomeworkGrid();
-                        else if (this.activeTabId === 'correction') this.correction.render();
-                    }
-                } catch (e) {
-                    console.warn("LocalStorage access denied or error:", e);
-                }
             },
  
             saveToCloud: function() {
-                const statusEl = document.getElementById('sync-status');
-                
-                try {
-                    localStorage.setItem('teacherBoardData', JSON.stringify({ settings: this.settings, data: this.data }));
-                } catch (e) {}
-
-                if (isOffline) {
-                    if (statusEl) {
-                         statusEl.className = "text-xs text-gray-600 flex items-center mr-2 font-bold bg-gray-100 px-2 py-1 rounded-full";
-                         statusEl.innerHTML = '<i class="fas fa-save mr-1"></i> 已儲存(本地)';
-                    }
-                    return;
-                }
-
                 if (!docRef) return;
-                
+                const statusEl = document.getElementById('sync-status');
                 if (statusEl) {
                     statusEl.className = "text-xs text-blue-600 flex items-center mr-2 font-bold bg-blue-50 px-2 py-1 rounded-full";
                     statusEl.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-1"></i> 上傳中...';
@@ -498,6 +393,7 @@
                 if (this.saveTimeout) clearTimeout(this.saveTimeout);
                 this.saveTimeout = setTimeout(async () => {
                     try {
+                        // 寫入雲端 (這是唯一的儲存點)
                         await setDoc(docRef, { settings: this.settings, data: this.data }, { merge: true });
                         if (statusEl) {
                              statusEl.className = "text-xs text-green-700 flex items-center mr-2 font-bold bg-green-50 px-2 py-1 rounded-full border border-green-200";
@@ -514,39 +410,15 @@
                 const container = document.getElementById('tabs-container');
                 if(!container) return;
                 container.innerHTML = '';
-                
-                this.tabs.forEach(tab => this.createTabElement(container, tab, false));
-                if (Array.isArray(this.data.customTabs)) {
-                    this.data.customTabs.forEach(tab => this.createTabElement(container, tab, true));
-                }
+                this.tabs.forEach(tab => {
+                    const el = document.createElement('div');
+                    el.className = `tab-btn ${tab.id === this.activeTabId ? 'tab-active' : 'tab-inactive'}`;
+                    el.onclick = () => this.switchTab(tab.id);
+                    el.innerHTML = `<i class="fas ${tab.icon} mr-2"></i><span>${tab.title}</span>`;
+                    container.appendChild(el);
+                });
             },
            
-            createTabElement: function(container, tab, isCustom) {
-                const el = document.createElement('div');
-                el.className = `tab-btn ${tab.id === this.activeTabId ? 'tab-active' : 'tab-inactive'}`;
-                el.onclick = () => this.switchTab(tab.id);
-                
-                const iconClass = isCustom ? 'fa-globe' : (tab.icon || 'fa-folder-open');
-                el.innerHTML = `<i class="fas ${iconClass} mr-2"></i><span>${tab.title}</span>`;
-                
-                if (isCustom) {
-                    const editBtn = document.createElement('div');
-                    editBtn.className = 'tab-edit-btn';
-                    editBtn.innerHTML = '<i class="fas fa-pen text-xs"></i>';
-                    editBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); app.openEditTabModal(tab.id); });
-                    el.appendChild(editBtn);
-
-                    const delBtn = document.createElement('div');
-                    delBtn.className = 'tab-edit-btn hover:bg-red-500';
-                    delBtn.style.marginLeft = '4px';
-                    delBtn.innerHTML = '<i class="fas fa-times text-xs"></i>';
-                    delBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); app.deleteTab(tab.id); });
-                    el.appendChild(delBtn);
-                }
-                
-                container.appendChild(el);
-            },
- 
             switchTab: function(tabId) {
                 this.activeTabId = tabId;
                 this.renderTabs();
@@ -564,54 +436,34 @@
                 } else if (tabId === 'correction') {
                     main.appendChild(document.getElementById('template-correction').firstElementChild.cloneNode(true));
                     this.correction.init();
-                } else {
-                    const tabData = this.data.customTabs.find(t => t.id === tabId);
-                    if (tabData) this.renderCustomTabView(tabData);
                 }
-            },
-            
-            // 渲染使用者自訂分頁 (Sandboxed)
-            renderCustomTabView: function(tabData) {
-                const main = document.getElementById('main-content');
-                const container = document.createElement('div');
-                container.className = "w-full h-full bg-white flex flex-col";
-                
-                let contentHTML = '';
-                const code = tabData.content;
-                
-                if (code.trim().startsWith('http')) {
-                     contentHTML = `<iframe src="${code}" class="w-full h-full border-none" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>`;
-                } else if (code.includes('<iframe')) {
-                     contentHTML = `<div class="w-full h-full flex items-center justify-center bg-black">${code.replace('<iframe', '<iframe class="w-full h-full"')}</div>`;
-                } else {
-                     contentHTML = `<iframe srcdoc="${code.replace(/"/g, '&quot;')}" class="w-full h-full border-none" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>`;
-                }
-                
-                container.innerHTML = contentHTML;
-                main.appendChild(container);
             },
 
-            // ================= 訂正系統邏輯 (整合版) =================
+            // ================= 訂正系統邏輯 (已整合至主程式) =================
             correction: {
                 init: function() {
                     this.createFrames();
                     this.createTitleChips();
-                    this.setupDragAndDrop();
                     this.render();
-                    // 綁定輸入框事件
+                    
                     const customInput = document.getElementById('customTitleInput');
                     if(customInput) {
                         customInput.addEventListener('keypress', e => {
                             if(e.key === 'Enter') app.correction.addCustomTitle();
                         });
                     }
-                    // 時間顯示
-                    setInterval(() => {
-                        const d=new Date();
-                        const t=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
-                        const el=document.getElementById('centerTimeDisplay');
-                        if(el)el.textContent=t;
-                    }, 1000);
+                    
+                    // 訂正頁面專屬的時鐘
+                    const timeEl = document.getElementById('centerTimeDisplay');
+                    if(timeEl) {
+                        const updateCorrectClock = () => {
+                            const d=new Date();
+                            timeEl.textContent=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+                        };
+                        updateCorrectClock();
+                        if(this.timer) clearInterval(this.timer);
+                        this.timer = setInterval(updateCorrectClock, 1000);
+                    }
                 },
                 
                 createFrames: function() {
@@ -622,24 +474,23 @@
                     for(let i=0; i<6; i++) {
                         const frame = document.createElement('div');
                         frame.id = `frame-${i}`;
-                        frame.className = `frame frame-bg-${i}`;
+                        frame.className = `corr-frame frame-bg-${i}`;
                         frame.innerHTML = `
                             <div class="frame-header">
                                 <input type="text" class="frame-title-input" placeholder="訂正項目" data-frame-index="${i}">
                                 <button onclick="app.correction.selectAll(${i})" class="frame-button frame-button-select">全選</button>
                                 <button onclick="app.correction.deselectAll(${i})" class="frame-button frame-button-deselect">取消</button>
                             </div>
-                            <div class="number-grid" id="grid-${i}"></div>
+                            <div class="corr-number-grid" id="grid-${i}"></div>
                         `;
                         frame.querySelector('.frame-title-input').oninput = e => app.correction.updateTitle(i, e.target.value);
                         grid.appendChild(frame);
                         
-                        // 建立數字格
                         const numGrid = frame.querySelector(`#grid-${i}`);
                         for(let n=1; n<=29; n++) {
                             if(n===15) continue;
                             const item = document.createElement('div');
-                            item.className = 'number-item';
+                            item.className = 'corr-number-item';
                             item.textContent = n;
                             item.dataset.number = n;
                             item.onclick = () => app.correction.toggleNumber(i, n);
@@ -661,7 +512,7 @@
                     for(let f=0; f<6; f++) {
                         const frame = document.getElementById(`grid-${f}`);
                         if(frame) {
-                            frame.querySelectorAll('.number-item').forEach(item => {
+                            frame.querySelectorAll('.corr-number-item').forEach(item => {
                                 const n = parseInt(item.dataset.number);
                                 if (data.selectedNumbers[f] && data.selectedNumbers[f].includes(n)) {
                                     item.classList.add('selected');
@@ -671,7 +522,6 @@
                             });
                         }
                     }
-                    
                     this.createTitleChips();
                 },
                 
@@ -701,22 +551,16 @@
                             if(index >= 17) { // 預設標題不可刪
                                 if(confirm(`確定要刪除標題「${title}」嗎？`)) {
                                     app.data.correction.defaultTitles.splice(index, 1);
-                                    app.saveToCloud();
+                                    app.saveToCloud(); // 統一呼叫主程式儲存
                                     app.correction.createTitleChips();
                                 }
                             }
                         };
                         
+                        // 簡單的拖放支援 (賦值給 input)
                         chip.ondragstart = (e) => e.dataTransfer.setData('text/plain', title);
                         container.appendChild(chip);
                     });
-                },
-                
-                setupDragAndDrop: function() {
-                    // 由於元素是動態生成的，這裡簡單處理
-                    // 實際上 createFrames 已經生成了 input，這裡需要確保事件綁定
-                    // 但因為每次切換分頁都會重建，這裡不做額外綁定，直接在 input 上加 ondrop 也可以
-                    // 為了完整性，這裡略過複雜的拖放事件綁定，直接用 click 賦值最穩
                 },
                 
                 toggleNumber: function(frameIdx, num) {
@@ -725,7 +569,7 @@
                     if(idx > -1) list.splice(idx, 1);
                     else list.push(num);
                     
-                    app.saveToCloud();
+                    app.saveToCloud(); // 立即同步
                     this.render();
                 },
                 
@@ -1134,7 +978,7 @@
                 this.renderHomeworkGrid();
             },
 
-            // ================= 自訂分頁邏輯 =================
+            // ================= 自訂分頁邏輯 (保留以防未來需要) =================
             
             openAddTabModal: function() {
                 this.editingTabId = null;
