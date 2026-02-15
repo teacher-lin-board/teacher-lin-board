@@ -75,15 +75,19 @@
         .title-chips-container { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; flex: 1; }
         .title-chip { background-color: #3b82f6; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; user-select: none; transition: all 0.2s; font-weight: 500; font-size: 16px; white-space: nowrap; }
         .title-chip:hover { background-color: #2563eb; transform: translateY(-2px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .title-chip.dragging { opacity: 0.5; }
         .frame-header { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
         .frame-title-input { width: 160px; font-size: 24px; font-weight: bold; padding: 4px 8px; border: 2px solid rgba(0,0,0,0.1); border-radius: 6px; background-color: rgba(255,255,255,0.9); }
         .frame-button { padding: 6px 10px; font-size: 12px; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
         .frame-button-select { background-color: #3b82f6; color: white; }
+        .frame-button-select:hover { background-color: #2563eb; }
         .frame-button-deselect { background-color: #6b7280; color: white; }
+        .frame-button-deselect:hover { background-color: #4b5563; }
         
         .add-title-inline { display: flex; align-items: center; gap: 8px; }
         .add-title-input { font-size: 16px; padding: 6px 12px; border: 2px solid #fbbf24; border-radius: 6px; width: 140px; }
         .add-title-btn { font-size: 14px; padding: 6px 12px; background-color: #f59e0b; color: white; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .add-title-btn:hover { background-color: #d97706; }
 
         .frames-container { position: relative; }
         .center-time-wrapper { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; pointer-events: none; }
@@ -254,6 +258,32 @@
         </div>
     </div>
  
+    <!-- 新增/修改滿版分頁 Modal -->
+    <div id="add-tab-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 flex flex-col max-h-[90vh]">
+            <h3 id="modal-title" class="text-2xl font-bold text-blue-900 mb-2 border-b-2 border-blue-100 pb-2 flex items-center">
+                 <i class="fas fa-code mr-2 text-blue-500"></i> 新增自訂分頁
+            </h3>
+            <p class="text-sm text-blue-700 mb-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                 <i class="fas fa-shield-alt text-green-600 mr-1"></i> <strong>已啟用沙盒隔離技術</strong><br>
+                 您可以貼上 AI 生成的完整 HTML 代碼、任何網址，系統會自動建立獨立環境運行。
+            </p>
+           
+            <div class="mb-4">
+                 <label class="block text-gray-700 font-bold mb-2">1. 分頁名稱</label>
+                 <input type="text" id="new-tab-title" class="w-full border-2 border-gray-200 focus:border-blue-400 p-2 rounded outline-none transition" placeholder="例如：訂正小工具">
+            </div>
+            <div class="mb-6 flex-grow flex flex-col">
+                <label class="block text-gray-700 font-bold mb-2">2. 貼上 HTML 原始碼 或 直接貼網址</label>
+                 <textarea id="new-tab-code" class="w-full border-2 border-gray-200 focus:border-blue-400 p-2 rounded outline-none transition flex-grow resize-none font-mono text-sm h-32" placeholder='請貼上完整 HTML 原始碼、網址或 <iframe ...> 語法'></textarea>
+            </div>
+            <div class="flex justify-end gap-3 mt-auto pt-4 border-t border-gray-100">
+                 <button onclick="app.closeAddTabModal()" class="px-5 py-2 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 transition">取消</button>
+                 <button id="modal-submit-btn" onclick="app.confirmAddOrEditTab()" class="px-5 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-md transition"><i class="fas fa-save mr-1"></i> 儲存分頁</button>
+            </div>
+        </div>
+    </div>
+ 
     <!-- 作業勾選 Modal -->
     <div id="homework-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4 animate-fade-in no-print">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
@@ -273,12 +303,15 @@
             </div>
         </div>
     </div>
+
+    <!-- 通知 -->
+    <div id="notification" class="notification"></div>
  
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
  
-        // 您的 Firebase 金鑰 (從您之前提供的文件取得)
+        // 您的 Firebase 金鑰
         const firebaseConfig = {
             apiKey: "AIzaSyAT9VXm8gf5Pn4A1iu3xXF6X8Ve9NYlUAk", 
             authDomain: "teacherboard-9224d.firebaseapp.com",
@@ -304,6 +337,8 @@
             data: { 
                 contactBook: {}, 
                 homework: {}, 
+                memos: {}, 
+                customTabs: [], 
                 // 訂正系統的資料結構 (預設值)
                 correction: {
                     selectedNumbers: Array(6).fill().map(()=>[]),
@@ -343,6 +378,13 @@
                 }
             },
  
+            getMonday: function(d) {
+                d = new Date(d);
+                const day = d.getDay();
+                const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+                return new Date(d.setDate(diff));
+            },
+ 
             setupRealtimeListener: function() {
                 const statusEl = document.getElementById('sync-status');
                 if(statusEl) statusEl.innerHTML = '<i class="fas fa-cloud-download-alt animate-bounce mr-1"></i> 連線中...';
@@ -351,12 +393,15 @@
                     if (docSnap.exists()) {
                         const parsed = docSnap.data();
                         
-                        // 載入設定與資料
                         if (parsed.settings) this.settings = { ...this.settings, ...parsed.settings };
                         if (parsed.data) {
-                            this.data = { ...this.data, ...parsed.data };
+                            let loadedData = parsed.data;
+                            // 解壓縮字串化的資料
+                            if (typeof loadedData.correction === 'string') {
+                                try { loadedData.correction = JSON.parse(loadedData.correction); } catch(e) {}
+                            }
+                            this.data = { ...this.data, ...loadedData };
                             
-                            // 確保訂正資料結構完整 (防呆)
                             if (!this.data.correction) this.data.correction = {};
                             if (!this.data.correction.selectedNumbers) this.data.correction.selectedNumbers = Array(6).fill().map(()=>[]);
                             if (!this.data.correction.correctionTitles) this.data.correction.correctionTitles = Array(6).fill('');
@@ -367,6 +412,7 @@
                         if (this.activeTabId === 'home') this.initHomeView();
                         else if (this.activeTabId === 'homework') this.renderHomeworkGrid();
                         else if (this.activeTabId === 'correction') this.correction.render();
+                        else this.renderCustomTabView(this.activeTabId);
                         
                         if(statusEl) {
                             statusEl.className = "text-xs text-green-700 flex items-center mr-2 font-bold bg-green-50 px-2 py-1 rounded-full border border-green-200";
@@ -393,15 +439,21 @@
                 if (this.saveTimeout) clearTimeout(this.saveTimeout);
                 this.saveTimeout = setTimeout(async () => {
                     try {
-                        // 寫入雲端 (這是唯一的儲存點)
-                        await setDoc(docRef, { settings: this.settings, data: this.data }, { merge: true });
+                        // 處理 Nested Array 問題
+                        const dataToSave = JSON.parse(JSON.stringify(this.data));
+                        if (dataToSave.correction && Array.isArray(dataToSave.correction.selectedNumbers)) {
+                            // 將訂正資料轉為字串
+                            dataToSave.correction = JSON.stringify(dataToSave.correction);
+                        }
+
+                        await setDoc(docRef, { settings: this.settings, data: dataToSave }, { merge: true });
                         if (statusEl) {
                              statusEl.className = "text-xs text-green-700 flex items-center mr-2 font-bold bg-green-50 px-2 py-1 rounded-full border border-green-200";
                              statusEl.innerHTML = '<i class="fas fa-cloud-upload-alt mr-1"></i> 已儲存至雲端';
                         }
                     } catch (e) {
                         console.error("儲存失敗:", e);
-                        if (statusEl) statusEl.innerHTML = '<span class="text-red-500">儲存失敗</span>';
+                        if (statusEl) statusEl.innerHTML = '<span class="text-red-500">儲存失敗: ' + e.message + '</span>';
                     }
                 }, 800);
             },
@@ -417,8 +469,39 @@
                     el.innerHTML = `<i class="fas ${tab.icon} mr-2"></i><span>${tab.title}</span>`;
                     container.appendChild(el);
                 });
+                
+                // 渲染自訂分頁 (如果有)
+                if (Array.isArray(this.data.customTabs)) {
+                    this.data.customTabs.forEach(tab => this.createTabElement(container, tab, true));
+                }
             },
            
+            createTabElement: function(container, tab, isCustom) {
+                const el = document.createElement('div');
+                el.className = `tab-btn ${tab.id === this.activeTabId ? 'tab-active' : 'tab-inactive'}`;
+                el.onclick = () => this.switchTab(tab.id);
+                
+                const iconClass = isCustom ? 'fa-globe' : (tab.icon || 'fa-folder-open');
+                el.innerHTML = `<i class="fas ${iconClass} mr-2"></i><span>${tab.title}</span>`;
+                
+                if (isCustom) {
+                    const editBtn = document.createElement('div');
+                    editBtn.className = 'tab-edit-btn';
+                    editBtn.innerHTML = '<i class="fas fa-pen text-xs"></i>';
+                    editBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); app.openEditTabModal(tab.id); });
+                    el.appendChild(editBtn);
+
+                    const delBtn = document.createElement('div');
+                    delBtn.className = 'tab-edit-btn hover:bg-red-500';
+                    delBtn.style.marginLeft = '4px';
+                    delBtn.innerHTML = '<i class="fas fa-times text-xs"></i>';
+                    delBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); app.deleteTab(tab.id); });
+                    el.appendChild(delBtn);
+                }
+                
+                container.appendChild(el);
+            },
+ 
             switchTab: function(tabId) {
                 this.activeTabId = tabId;
                 this.renderTabs();
@@ -436,10 +519,35 @@
                 } else if (tabId === 'correction') {
                     main.appendChild(document.getElementById('template-correction').firstElementChild.cloneNode(true));
                     this.correction.init();
+                } else {
+                    const tabData = this.data.customTabs.find(t => t.id === tabId);
+                    if (tabData) this.renderCustomTabView(tabData);
                 }
             },
+            
+            // 渲染使用者自訂分頁 (Sandboxed)
+            renderCustomTabView: function(tabData) {
+                if (!tabData) return;
+                const main = document.getElementById('main-content');
+                const container = document.createElement('div');
+                container.className = "w-full h-full bg-white flex flex-col";
+                
+                let contentHTML = '';
+                const code = tabData.content;
+                
+                if (code.trim().startsWith('http')) {
+                     contentHTML = `<iframe src="${code}" class="w-full h-full border-none" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>`;
+                } else if (code.includes('<iframe')) {
+                     contentHTML = `<div class="w-full h-full flex items-center justify-center bg-black">${code.replace('<iframe', '<iframe class="w-full h-full"')}</div>`;
+                } else {
+                     contentHTML = `<iframe srcdoc="${code.replace(/"/g, '&quot;')}" class="w-full h-full border-none" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>`;
+                }
+                
+                container.innerHTML = contentHTML;
+                main.appendChild(container);
+            },
 
-            // ================= 訂正系統邏輯 (已整合至主程式) =================
+            // ================= 訂正系統邏輯 (整合版) =================
             correction: {
                 init: function() {
                     this.createFrames();
@@ -448,12 +556,13 @@
                     
                     const customInput = document.getElementById('customTitleInput');
                     if(customInput) {
-                        customInput.addEventListener('keypress', e => {
+                        const newElement = customInput.cloneNode(true);
+                        customInput.parentNode.replaceChild(newElement, customInput);
+                        newElement.addEventListener('keypress', e => {
                             if(e.key === 'Enter') app.correction.addCustomTitle();
                         });
                     }
                     
-                    // 訂正頁面專屬的時鐘
                     const timeEl = document.getElementById('centerTimeDisplay');
                     if(timeEl) {
                         const updateCorrectClock = () => {
@@ -503,12 +612,10 @@
                     const data = app.data.correction;
                     if(!data) return;
 
-                    // 更新標題
                     document.querySelectorAll('.frame-title-input').forEach((input, i) => {
                         input.value = data.correctionTitles[i] || '';
                     });
                     
-                    // 更新數字狀態
                     for(let f=0; f<6; f++) {
                         const frame = document.getElementById(`grid-${f}`);
                         if(frame) {
@@ -551,13 +658,12 @@
                             if(index >= 17) { // 預設標題不可刪
                                 if(confirm(`確定要刪除標題「${title}」嗎？`)) {
                                     app.data.correction.defaultTitles.splice(index, 1);
-                                    app.saveToCloud(); // 統一呼叫主程式儲存
+                                    app.saveToCloud();
                                     app.correction.createTitleChips();
                                 }
                             }
                         };
                         
-                        // 簡單的拖放支援 (賦值給 input)
                         chip.ondragstart = (e) => e.dataTransfer.setData('text/plain', title);
                         container.appendChild(chip);
                     });
@@ -568,8 +674,7 @@
                     const idx = list.indexOf(num);
                     if(idx > -1) list.splice(idx, 1);
                     else list.push(num);
-                    
-                    app.saveToCloud(); // 立即同步
+                    app.saveToCloud();
                     this.render();
                 },
                 
@@ -604,10 +709,19 @@
                         }
                         input.value = '';
                     }
+                },
+                
+                showNotification: function(m) {
+                    const n = document.getElementById('notification');
+                    if(n) {
+                        n.textContent = m;
+                        n.style.display = 'block';
+                        setTimeout(() => n.style.display = 'none', 3000);
+                    }
                 }
             },
 
-            // ================= 首頁邏輯 (保持不變) =================
+            // ================= 首頁邏輯 =================
 
             initHomeView: function() {
                 const sets = this.settings;
