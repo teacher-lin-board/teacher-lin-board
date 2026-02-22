@@ -209,12 +209,11 @@
                               </div>
                           </div>
                           <div class="flex gap-1 mb-2 overflow-x-auto shrink-0">
-                              <button onclick="app.switchDay(0)" id="day-btn-0" class="day-btn flex-1 py-1 rounded-t text-sm font-bold transition bg-white/10 text-gray-300 hover:bg-white/20">週一</button>
-                              <button onclick="app.switchDay(1)" id="day-btn-1" class="day-btn flex-1 py-1 rounded-t text-sm font-bold transition bg-white/10 text-gray-300 hover:bg-white/20">週二</button>
-                              <button onclick="app.switchDay(2)" id="day-btn-2" class="day-btn flex-1 py-1 rounded-t text-sm font-bold transition bg-white/10 text-gray-300 hover:bg-white/20">週三</button>
-                              <button onclick="app.switchDay(3)" id="day-btn-3" class="day-btn flex-1 py-1 rounded-t text-sm font-bold transition bg-white/10 text-gray-300 hover:bg-white/20">週四</button>
-                              <button onclick="app.switchDay(4)" id="day-btn-4" class="day-btn flex-1 py-1 rounded-t text-sm font-bold transition bg-white/10 text-gray-300 hover:bg-white/20">週五</button>
-                          </div>
+                           <button id="day-btn-0" onclick="app.switchDay(0)" class="day-btn flex-1 py-1 rounded-t text-sm font-bold transition bg-white/10 text-gray-300 hover:bg-white/20">週一</button>
+<button id="day-btn-1" onclick="app.switchDay(1)" class="day-btn flex-1 py-1 rounded-t text-sm font-bold transition bg-white/10 text-gray-300 hover:bg-white/20">週二</button>
+<button id="day-btn-2" onclick="app.switchDay(2)" class="day-btn flex-1 py-1 rounded-t text-sm font-bold transition bg-white/10 text-gray-300 hover:bg-white/20">週三</button>
+<button id="day-btn-3" onclick="app.switchDay(3)" class="day-btn flex-1 py-1 rounded-t text-sm font-bold transition bg-white/10 text-gray-300 hover:bg-white/20">週四</button>
+<button id="day-btn-4" onclick="app.switchDay(4)" class="day-btn flex-1 py-1 rounded-t text-sm font-bold transition bg-white/10 text-gray-300 hover:bg-white/20">週五</button>                          </div>
                           <div class="flex-grow flex gap-6 overflow-hidden pt-2">
                               <div class="flex-grow flex flex-col overflow-y-auto pr-2 w-7/12" id="todo-list-container">
                                   <div id="todo-list" class="space-y-3 mb-2"></div>
@@ -1354,7 +1353,29 @@
             app.init();
         };
 
-    </script>
+// 將我們的自動點擊邏輯，直接放進您原本的 onload 裡面
+    window.onload = function() {
+        app.init(); // 您原本的初始化
+
+        // === 自動偵測星期並觸發點擊的腳本 ===
+        let today = new Date().getDay(); // 取得星期幾
+        
+        // 如果是週末 (0是週日，6是週六)，停在週五 (5)
+        if (today === 0 || today === 6) {
+            today = 5; 
+        }
+        
+        // 換算成您按鈕的 ID 數字 (週一為0，所以減1)
+        let btnIndex = today - 1;
+        let targetBtn = document.getElementById('day-btn-' + btnIndex);
+        
+        // 觸發點擊
+        if (targetBtn) {
+            targetBtn.click();
+        }
+        // ===================================
+    };
+
+</script> <!-- ✅ 確保這裡有關閉標籤 -->
 </body>
 </html>
-
