@@ -482,7 +482,10 @@
             activeTabId: 'home', 
             currentWeekBase: null,
             currentDayIndex: 0, 
-            currentHomeworkDate: new Date().toISOString().split('T')[0], 
+            currentHomeworkDate: (function(){ 
+                const d = new Date(); 
+                return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); 
+            })(), 
             currentEditingStudent: null,
            
             init: function() {
@@ -1128,24 +1131,24 @@ initHomeView: function() {
                 }
             },
 
-             updateTodoText: function(idx, val) {
-               const dateKey = this.getDateKey();
-               if (this.data.contactBook[dateKey]) {
-                   // 1. 先把您輸入的文字更新到暫存資料中（畫面不卡頓）
-                   this.data.contactBook[dateKey].items[idx].text = val;
+             updateTodoText: function(idx, val) {
+               const dateKey = this.getDateKey();
+               if (this.data.contactBook[dateKey]) {
+                   // 1. 先把您輸入的文字更新到暫存資料中（畫面不卡頓）
+                   this.data.contactBook[dateKey].items[idx].text = val;
 
-                   // 2. 取消之前的倒數計時器
-                   if (this.todoSaveTimer) {
-                       clearTimeout(this.todoSaveTimer);
-                   }
+                   // 2. 取消之前的倒數計時器
+                   if (this.todoSaveTimer) {
+                       clearTimeout(this.todoSaveTimer);
+                   }
 
-                   // 3. 重新設定計時器，等您「停頓 2 秒」後才在背景自動存檔
-                   this.todoSaveTimer = setTimeout(() => {
-                       this.saveToCloud(); 
-                       console.log("聯絡簿項目已自動延遲存檔");
-                   }, 2000);
-               }
-           },
+                   // 3. 重新設定計時器，等您「停頓 2 秒」後才在背景自動存檔
+                   this.todoSaveTimer = setTimeout(() => {
+                       this.saveToCloud(); 
+                       console.log("聯絡簿項目已自動延遲存檔");
+                   }, 2000);
+               }
+           },
 
             changeContactBookFontSize: function(delta) {
                 let size = (this.settings.contactBookFontSize || 24) + delta;
