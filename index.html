@@ -444,7 +444,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
- 
+ import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         // 您的 Firebase 金鑰
         const firebaseConfig = {
             apiKey: "AIzaSyAT9VXm8gf5Pn4A1iu3xXF6X8Ve9NYlUAk", 
@@ -454,7 +454,17 @@
             messagingSenderId: "801036213120",
             appId: "1:801036213120:web:2077de68b0a74395023f65"
         };
- 
+ const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    
+    // 執行匿名登入 (向警衛拿通行證)
+    signInAnonymously(auth)
+      .then(() => {
+        console.log("✅ 成功拿到通行證！匿名登入成功。");
+      })
+      .catch((error) => {
+        console.error("❌ 登入失敗：", error);
+      });
         let db, docRef;
  
         window.app = {
