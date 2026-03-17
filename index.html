@@ -439,25 +439,33 @@
     </div>
 
     <!-- 通知 -->
-    <div id="notification" class="notification"></div>
+  <div id="notification" class="notification"></div>
  
-    <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        // 您的 Firebase 金鑰
-        const firebaseConfig = {
-            apiKey: "AIzaSyAT9VXm8gf5Pn4A1iu3xXF6X8Ve9NYlUAk", 
-            authDomain: "teacherboard-9224d.firebaseapp.com",
-            projectId: "teacherboard-9224d",
-            storageBucket: "teacherboard-9224d.firebasestorage.app",
-            messagingSenderId: "801036213120",
-            appId: "1:801036213120:web:2077de68b0a74395023f65"
-        };
- const app = initializeApp(firebaseConfig);
+  <script type="module">
+    // 1. 載入所需的 Firebase 工具
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    // 2. 您的 Firebase 金鑰
+    const firebaseConfig = {
+        apiKey: "AIzaSyAT9VXm8gf5Pn4A1iu3xXF6X8Ve9NYlUAk", 
+        authDomain: "teacherboard-9224d.firebaseapp.com",
+        projectId: "teacherboard-9224d",
+        storageBucket: "teacherboard-9224d.firebasestorage.app",
+        messagingSenderId: "801036213120",
+        appId: "1:801036213120:web:2077de68b0a74395023f65"
+    };
+
+    // 3. 初始化 Firebase 系統
+    const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     
-    // 執行匿名登入 (向警衛拿通行證)
+    // 👇 🚨 幫您補上這行：啟動資料庫
+    let db = getFirestore(app); 
+    let docRef;
+ 
+    // 4. 執行匿名登入 (向警衛拿通行證)
     signInAnonymously(auth)
       .then(() => {
         console.log("✅ 成功拿到通行證！匿名登入成功。");
@@ -465,9 +473,9 @@ import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/1
       .catch((error) => {
         console.error("❌ 登入失敗：", error);
       });
-        let db, docRef;
  
-        window.app = {
+    // 5. 繼續您原本的程式碼
+    window.app = {
             tabs: [ 
                 { id: 'home', title: '聯絡簿', type: 'system', icon: 'fa-home' }, 
                 { id: 'homework', title: '作業管理', type: 'system', icon: 'fa-book' },
