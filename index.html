@@ -1022,28 +1022,27 @@ initHomeView: function() {
                 setVal('reminder-text', sets.reminderText);
                 setVal('reminder-color', sets.reminderColor || '#000000');
                 
-                const rText = document.getElementById('reminder-text');
-                if(rText) {
-                    rText.style.color = sets.reminderColor;
-                    rText.style.fontSize = (sets.reminderFontSize || 24) + 'px';
-                    if (sets.reminderBlink) rText.classList.add('blink-active');
-                }
+               const rText = document.getElementById('reminder-text');
+               if(rText) {
+                   rText.style.color = sets.reminderColor;
+                   rText.style.fontSize = (sets.reminderFontSize || 24) + 'px';
+                   if (sets.reminderBlink) rText.classList.add('blink-active');
+               }
 
-                // 👇👇👇 這次新增的核心魔法：自動偵測星期幾 👇👇👇
-                let today = new Date().getDay();
-                if (today === 0 || today === 6) {
-                    this.currentDayIndex = 4; // 如果是週末，自動選取週五 (4)
-                } else {
-                    this.currentDayIndex = today - 1; // 週一是0, 週二是1...
-                }
-                // 👆👆👆 魔法結束 👆👆👆
+               // 🧹 把原本自動偵測星期的魔法刪除，改成只檢查是否已經有選定的日子
+               // 如果是第一次載入 (還沒有選日子)，才預設選星期一 (0) 或其他預設值
+               // 這樣就不會每次打字都重新計算日期了！
+               if (this.currentDayIndex === undefined) {
+                   this.currentDayIndex = 0; // 預設停在星期一
+               }
+               // 🧹 修改結束
 
-                this.updateDateDisplay();
-                this.updateDayButtons();
-                this.renderTodoList();
-                this.renderIdiom();
-            },
-            startClock: function() {
+               this.updateDateDisplay();
+               this.updateDayButtons();
+               this.renderTodoList();
+               this.renderIdiom();
+           },
+           startClock: function() {
                 const update = () => {
                     const now = new Date();
                     const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false });
@@ -1109,27 +1108,52 @@ initHomeView: function() {
             },
 
             renderTodoList: function() {
-                const listEl = document.getElementById('todo-list');
-                if(!listEl) return;
-                listEl.innerHTML = '';
-                
-                const dateKey = this.getDateKey();
-                const items = (this.data.contactBook && this.data.contactBook[dateKey]) ? this.data.contactBook[dateKey].items : [];
-                
-                items.forEach((item, idx) => {
-                    const div = document.createElement('div');
-                    div.className = "group flex items-center bg-white/10 p-2 rounded hover:bg-white/20 transition";
-                    div.innerHTML = `
-                        <div class="text-yellow-400 font-bold mr-3 text-xl w-6 text-center">${idx + 1}.</div>
-                        <input type="text" class="chalk-input text-xl flex-grow ${item.done ? 'line-through text-gray-400' : ''}" 
-                            value="${item.text}" oninput="app.updateTodoText(${idx}, this.value)" 
-                            style="font-size: ${this.settings.contactBookFontSize || 24}px">
-                        <i class="fas fa-trash-alt cb-delete-btn" onclick="app.removeTodoItem(${idx})"></i>
-                    `;
-                    listEl.appendChild(div);
-                });
-            },
+               // 👇👇👇 魔法 1：畫面前，先記住目前游標在哪裡 👇👇👇
+               const activeElement = document.activeElement;
+               let activeIndex = -1;
+               let cursorPosition = 0;
+               // 檢查現在是不是正在輸入框裡面打字
+               if (activeElement && activeElement.classList.contains('chalk-input')) {
+                   activeIndex = parseInt(activeElement.getAttribute('data-idx')); // 記住是第幾行
+                   cursorPosition = activeElement.selectionStart; // 記住游標位置
+               }
+               // 👆👆👆 魔法 1 結束 👆👆👆
 
+               const listEl = document.getElementById('todo-list');
+               if(!listEl) return;
+               listEl.innerHTML = '';
+               
+               const dateKey = this.getDateKey();
+               const items = (this.data.contactBook && this.data.contactBook[dateKey]) ? this.data.contactBook[dateKey].items : [];
+               
+               items.forEach((item, idx) => {
+                   const div = document.createElement('div');
+                   div.className = "group flex items-center bg-white/10 p-2 rounded hover:bg-white/20 transition";
+                   div.innerHTML = `
+                       <div class="text-yellow-400 font-bold mr-3 text-xl w-6 text-center">${idx + 1}.</div>
+                       <input type="text" data-idx="${idx}" class="chalk-input text-xl flex-grow ${item.done ? 'line-through text-gray-400' : ''}" 
+                              value="${item.text}" oninput="app.updateTodoText(${idx}, this.value)" 
+                              style="font-size: ${this.settings.contactBookFontSize || 24}px">
+                       <i class="fas fa-trash-alt cb-delete-btn" onclick="app.removeTodoItem(${idx})"></i>
+                   `;
+                   listEl.appendChild(div);
+               });
+
+               // 👇👇👇 魔法 3：畫面畫完後，把游標放回原本的地方 👇👇👇
+               if (activeIndex !== -1) {
+                   // 加一點點微小的延遲，讓瀏覽器有時間把剛剛畫好的輸入框準備好
+                   setTimeout(() => {
+                       const inputs = listEl.querySelectorAll('.chalk-input');
+                       inputs.forEach(input => {
+                           if (parseInt(input.getAttribute('data-idx')) === activeIndex) {
+                               input.focus(); // 聚焦回這個輸入框
+                               input.setSelectionRange(cursorPosition, cursorPosition); // 把游標插回原本打字的地方
+                           }
+                       });
+                   }, 0);
+               }
+               // 👆👆👆 魔法 3 結束 👆👆👆
+           },
             addTodoItem: function() {
                 const dateKey = this.getDateKey();
                 if (!this.data.contactBook) this.data.contactBook = {};
@@ -1149,24 +1173,24 @@ initHomeView: function() {
                 }
             },
 
-             updateTodoText: function(idx, val) {
-               const dateKey = this.getDateKey();
-               if (this.data.contactBook[dateKey]) {
-                   // 1. 先把您輸入的文字更新到暫存資料中（畫面不卡頓）
-                   this.data.contactBook[dateKey].items[idx].text = val;
+             updateTodoText: function(idx, val) {
+               const dateKey = this.getDateKey();
+               if (this.data.contactBook[dateKey]) {
+                   // 1. 先把您輸入的文字更新到暫存資料中（畫面不卡頓）
+                   this.data.contactBook[dateKey].items[idx].text = val;
 
-                   // 2. 取消之前的倒數計時器
-                   if (this.todoSaveTimer) {
-                       clearTimeout(this.todoSaveTimer);
-                   }
+                   // 2. 取消之前的倒數計時器
+                   if (this.todoSaveTimer) {
+                       clearTimeout(this.todoSaveTimer);
+                   }
 
-                   // 3. 重新設定計時器，等您「停頓 2 秒」後才在背景自動存檔
-                   this.todoSaveTimer = setTimeout(() => {
-                       this.saveToCloud(); 
-                       console.log("聯絡簿項目已自動延遲存檔");
-                   }, 2000);
-               }
-           },
+                   // 3. 重新設定計時器，等您「停頓 2 秒」後才在背景自動存檔
+                   this.todoSaveTimer = setTimeout(() => {
+                       this.saveToCloud(); 
+                       console.log("聯絡簿項目已自動延遲存檔");
+                   }, 2000);
+               }
+           },
 
             changeContactBookFontSize: function(delta) {
                 let size = (this.settings.contactBookFontSize || 24) + delta;
@@ -1488,4 +1512,3 @@ initHomeView: function() {
 
 </body>
 </html>
-
