@@ -1101,12 +1101,16 @@ initHomeView: function() {
                 }
             },
 
-            getDateKey: function() {
-                const d = new Date(this.currentWeekBase);
-                d.setDate(d.getDate() + this.currentDayIndex);
-                return d.toISOString().split('T')[0];
-            },
-
+           getDateKey: function() {
+               const d = new Date(this.currentWeekBase);
+               d.setDate(d.getDate() + this.currentDayIndex);
+               
+               // 👇 換成抓取台灣本地時間，徹底消滅 8 小時的時差問題！
+               const year = d.getFullYear();
+               const month = String(d.getMonth() + 1).padStart(2, '0');
+               const day = String(d.getDate()).padStart(2, '0');
+               return `${year}-${month}-${day}`;
+           },
             renderTodoList: function() {
                // 👇👇👇 魔法 1：畫面前，先記住目前游標在哪裡 👇👇👇
                const activeElement = document.activeElement;
